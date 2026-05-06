@@ -2,6 +2,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.core.management import call_command
+from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -12,7 +14,7 @@ from .models import Notificacion
 
 from .forms import PerfilUsuarioForm, ResenaForm
 from .models import (Amistad,UsuarioSilenciado,Anime, Favorito,LikeResena,MensajePrivado,PerfilUsuario,Reporte,Resena,ReporteUsuario,StrikeUsuario,Notificacion,)
-
+import os
 
 # ============================================================
 # CONFIGURACIÓN GENERAL DE IMÁGENES POR DEFECTO :D
@@ -45,6 +47,31 @@ def obtener_imagenes_perfil(usuario):
 # ============================================================
 # INICIO / CATÁLOGO PRINCIPAL :D
 # ============================================================
+
+@require_GET
+def actualizar_catalogo_render(request):
+    token = request.GET.get("token")
+    token_seguro = os.environ.get("UPDATE_CATALOG_TOKEN")
+
+    if not token_seguro or token != token_seguro:
+        return JsonResponse({
+            "ok": False,
+            "error": "No autorizado"
+        }, status=403)
+
+    try:
+        call_command("actualizar_animes_emision")
+
+        return JsonResponse({
+            "ok": True,
+            "mensaje": "Catálogo actualizado correctamente"
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "ok": False,
+            "error": str(e)
+        }, status=500)
 
 def inicio(request):
     busqueda = request.GET.get("buscar")
