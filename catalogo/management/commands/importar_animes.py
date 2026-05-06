@@ -9,15 +9,12 @@ class Command(BaseCommand):
     help = "Importa catálogo general de animes populares desde Jikan API sin hentai"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--paginas",
-            type=int,
-            default=10,
-            help="Cantidad de páginas a importar. Default: 10",
-        )
+         parser.add_argument("--desde", type=int, default=1)
+         parser.add_argument("--hasta", type=int, default=5)
 
     def handle(self, *args, **kwargs):
-        paginas = kwargs["paginas"]
+        desde = kwargs["desde"]
+        hasta = kwargs["hasta"]
 
         creados = 0
         actualizados = 0
@@ -26,10 +23,10 @@ class Command(BaseCommand):
         tipos_permitidos = ["TV", "Movie", "OVA", "ONA", "Special", "Music"]
 
         self.stdout.write(
-            self.style.WARNING(f"Importando catálogo general: {paginas} páginas...")
+            self.style.WARNING(f"Importando catálogo general: {hasta - desde + 1} páginas...")
         )
 
-        for page in range(1, paginas + 1):
+        for page in range(desde, hasta + 1):
             url = f"https://api.jikan.moe/v4/top/anime?page={page}"
 
             self.stdout.write(self.style.WARNING(f"Importando página {page}..."))

@@ -1071,8 +1071,10 @@ def importar_catalogo_render(request):
         return JsonResponse({"ok": False, "error": "No autorizado"}, status=403)
 
     try:
-        call_command("importar_animes", paginas=5)
+        desde = int(request.GET.get("desde", 1))
+        hasta = int(request.GET.get("hasta", 5))
 
+        call_command("importar_animes", desde=desde, hasta=hasta)
         return JsonResponse({
             "ok": True,
             "mensaje": "Catálogo importado correctamente"
