@@ -45,4 +45,8 @@ urlpatterns = [
     path("notificaciones/marcar-leidas/",views.marcar_notificaciones_leidas,name="marcar_notificaciones_leidas"),
     path("admin-reportes/usuario/<int:usuario_id>/quitar-strike/",views.quitar_strike_usuario,name="quitar_strike_usuario"),
     path("admin-tools/actualizar-catalogo/", views.actualizar_catalogo_render, name="actualizar_catalogo_render"),
+    path("admin-tools/traducir-catalogo/", views.traducir_catalogo_render, name="traducir_catalogo_render"),
+
+
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
