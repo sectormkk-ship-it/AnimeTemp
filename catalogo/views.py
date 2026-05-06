@@ -1057,3 +1057,29 @@ def traducir_catalogo_render(request):
         return JsonResponse({"ok": True, "mensaje": "Catálogo traducido correctamente"})
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)    
+    
+    
+@require_GET
+def importar_catalogo_render(request):
+    import os
+    from django.core.management import call_command
+
+    token = request.GET.get("token")
+    token_seguro = os.environ.get("UPDATE_CATALOG_TOKEN")
+
+    if not token_seguro or token != token_seguro:
+        return JsonResponse({"ok": False, "error": "No autorizado"}, status=403)
+
+    try:
+        call_command("importar_animes", paginas=5)
+
+        return JsonResponse({
+            "ok": True,
+            "mensaje": "Catálogo importado correctamente"
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "ok": False,
+            "error": str(e)
+        }, status=500)    
