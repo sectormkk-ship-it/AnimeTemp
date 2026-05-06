@@ -1,0 +1,238 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .emision-wrapper {
+        max-width: 1300px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .emision-title {
+        text-align: center;
+        color: #38bdf8;
+        font-size: 42px;
+        margin-bottom: 35px;
+    }
+
+    .emision-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+
+    .emision-card {
+        background: #1e293b;
+        border-radius: 18px;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(56, 189, 248, 0.15);
+        transition: 0.2s;
+    }
+
+    .emision-card:hover {
+        transform: scale(1.03);
+        border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .emision-card img {
+        width: 100%;
+        height: 360px;
+        object-fit: cover;
+        border-radius: 14px;
+        margin-bottom: 15px;
+    }
+
+    .emision-card h2 {
+        color: #38bdf8;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .emision-info {
+        color: #cbd5e1;
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .puntuacion {
+        color: gold;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .proximo-box {
+        margin-top: 15px;
+        padding: 12px;
+        background: rgba(15, 23, 42, 0.7);
+        border-radius: 12px;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .proximo-box strong {
+        color: #38bdf8;
+    }
+
+    .countdown {
+        margin-top: 10px;
+        display: inline-block;
+        background: #020617;
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .dias-filtro {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 35px;
+    }
+
+    .dias-filtro a {
+        background: #1e293b;
+        color: #38bdf8;
+        padding: 10px 16px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: bold;
+        border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .dias-filtro a:hover,
+    .dias-filtro a.activo {
+        background: #38bdf8;
+        color: #020617;
+    }
+</style>
+
+<div class="emision-wrapper">
+
+    <h1 class="emision-title">📺 Animes en Emisión</h1>
+
+    <div class="dias-filtro">
+        <a href="{% url 'emision' %}" class="{% if not dia_actual %}activo{% endif %}">Todos</a>
+        <a href="?dia=monday" class="{% if dia_actual == 'monday' %}activo{% endif %}">Lunes</a>
+        <a href="?dia=tuesday" class="{% if dia_actual == 'tuesday' %}activo{% endif %}">Martes</a>
+        <a href="?dia=wednesday" class="{% if dia_actual == 'wednesday' %}activo{% endif %}">Miércoles</a>
+        <a href="?dia=thursday" class="{% if dia_actual == 'thursday' %}activo{% endif %}">Jueves</a>
+        <a href="?dia=friday" class="{% if dia_actual == 'friday' %}activo{% endif %}">Viernes</a>
+        <a href="?dia=saturday" class="{% if dia_actual == 'saturday' %}activo{% endif %}">Sábado</a>
+        <a href="?dia=sunday" class="{% if dia_actual == 'sunday' %}activo{% endif %}">Domingo</a>
+    </div>
+
+    <div class="emision-grid">
+
+        {% for anime in animes %}
+        <a href="{% url 'detalle_anime' anime.id %}" style="text-decoration:none; color:inherit;">
+
+            <div class="emision-card">
+
+                <img src="{{ anime.imagen }}" alt="{{ anime.titulo }}">
+
+                <h2>{{ anime.titulo }}</h2>
+
+                <p class="emision-info">
+                    <strong>Temporada:</strong> {{ anime.temporada }}
+                </p>
+
+                <p class="emision-info">
+                    <strong>Episodios:</strong> {{ anime.episodios }}
+                </p>
+
+                <p class="emision-info">
+                    <strong>Estado:</strong> {{ anime.estado }}
+                </p>
+
+                <div class="proximo-box">
+
+                    <p class="emision-info">
+                        <strong>Próximo episodio:</strong>
+                        {{ anime.proximo_episodio }}
+                    </p>
+
+                    <p class="emision-info">
+                        <strong>Fecha:</strong>
+                        {{ anime.fecha_emision|date:"d/m/Y" }}
+                    </p>
+
+                    <p class="emision-info">
+                        <strong>Hora ARG:</strong>
+                        {{ anime.fecha_emision|date:"H:i" }}
+                    </p>
+
+                    <div class="countdown" data-fecha="{{ anime.fecha_emision|date:'c' }}"
+                        data-dia="{{ anime.fecha_emision|date:'w' }}">
+                        Calculando...
+                    </div>
+
+                </div>
+
+                <p class="puntuacion">
+                    ⭐ {{ anime.puntuacion }}
+                </p>
+
+            </div>
+
+        </a>
+
+        {% empty %}
+        <p style="color:white; text-align:center;">
+            No hay animes en emisión cargados.
+        </p>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const countdowns = document.querySelectorAll(".countdown");
+
+        const hoy = new Date();
+        const diaHoyJS = hoy.getDay();
+
+        countdowns.forEach(countdown => {
+            const diaAnime = Number(countdown.dataset.dia);
+
+            if (diaAnime !== diaHoyJS) {
+                countdown.style.display = "none";
+                return;
+            }
+
+            const fecha = new Date(countdown.dataset.fecha);
+
+            function actualizar() {
+                const ahora = new Date();
+                const diferencia = fecha - ahora;
+
+                if (diferencia <= 0) {
+                    countdown.textContent = "🔥 Emitiéndose ahora";
+                    countdown.style.color = "#22c55e";
+                    countdown.style.display = "inline-block";
+                    return;
+                }
+
+                const horas = Math.floor(diferencia / (1000 * 60 * 60));
+                const minutos = Math.floor((diferencia / (1000 * 60)) % 60);
+
+                countdown.textContent = `⏳ Faltan ${horas}h ${minutos}m`;
+                countdown.style.display = "inline-block";
+            }
+
+            actualizar();
+            setInterval(actualizar, 60000);
+        });
+    });
+</script>
+
+{% endblock %}

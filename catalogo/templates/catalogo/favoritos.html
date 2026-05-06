@@ -1,0 +1,133 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .favoritos-container {
+        max-width: 1200px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .favoritos-container h1 {
+        text-align: center;
+        color: #38bdf8;
+        margin-bottom: 40px;
+        font-size: 38px;
+    }
+
+    .favoritos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 25px;
+    }
+
+    .card {
+        background: #1e293b;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.35);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: scale(1.03);
+    }
+
+    .card img {
+        width: 100%;
+        max-height: 320px;
+        object-fit: contain;
+        border-radius: 12px;
+        background: #0f172a;
+    }
+
+    .card h2 {
+        color: #38bdf8;
+        font-size: 22px;
+        margin-top: 15px;
+    }
+
+    .card p {
+        color: #cbd5e1;
+        font-size: 14px;
+    }
+
+    .detalle-btn {
+        width: 100%;
+        padding: 12px;
+        background: #38bdf8;
+        color: #020617;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .detalle-btn:hover {
+        background: #0ea5e9;
+    }
+
+    .quitar-btn {
+        width: 100%;
+        padding: 12px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .quitar-btn:hover {
+        background: #dc2626;
+    }
+
+    .sin-favoritos {
+        text-align: center;
+        color: #cbd5e1;
+        font-size: 18px;
+    }
+</style>
+
+<div class="favoritos-container">
+
+    <h1>Mis Favoritos</h1>
+
+    {% if favoritos %}
+        <div class="favoritos-grid">
+
+            {% for favorito in favoritos %}
+                <div class="card">
+
+                    <a href="{% url 'detalle_anime' favorito.anime.id %}" style="text-decoration: none; color: inherit;">
+                        <img src="{{ favorito.anime.imagen }}" alt="{{ favorito.anime.titulo }}">
+                        <h2>{{ favorito.anime.titulo }}</h2>
+                        <p>{{ favorito.anime.descripcion|truncatewords:20 }}</p>
+                    </a>
+
+                    <a href="{% url 'detalle_anime' favorito.anime.id %}">
+                        <button class="detalle-btn">Ver Detalle</button>
+                    </a>
+
+                    <a href="{% url 'quitar_favorito' favorito.anime.id %}">
+                        <button class="quitar-btn">
+                            Quitar de Favoritos
+                        </button>
+                    </a>
+
+                </div>
+            {% endfor %}
+
+        </div>
+    {% else %}
+        <p class="sin-favoritos">Todavía no agregaste animes a favoritos.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

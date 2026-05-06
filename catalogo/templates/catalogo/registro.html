@@ -1,0 +1,138 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .registro-container {
+        max-width: 520px;
+        margin: 30px auto;
+        background: #1e293b;
+        padding: 35px;
+        border-radius: 22px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .registro-title {
+        text-align: center;
+        color: #38bdf8;
+        margin-bottom: 28px;
+        font-size: 28px;
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #e2e8f0;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 13px;
+        border-radius: 12px;
+        border: 1px solid #38bdf8;
+        background: #0f172a;
+        color: white;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .helptext {
+        display: block;
+        margin-top: 8px;
+        color: #94a3b8;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .errorlist {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid #ef4444;
+        color: #fecaca;
+        padding: 10px 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        list-style: none;
+    }
+
+    .registro-btn {
+        width: 100%;
+        background: #38bdf8;
+        color: #020617;
+        border: none;
+        padding: 14px;
+        border-radius: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    .registro-btn:hover {
+        background: #0ea5e9;
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .login-link a {
+        color: #38bdf8;
+        text-decoration: none;
+        font-weight: bold;
+    }
+</style>
+
+<div class="registro-container">
+
+    <h2 class="registro-title">Crear cuenta</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            {{ form.non_field_errors }}
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Nombre de usuario</label>
+            {{ form.username }}
+            {{ form.username.errors }}
+            <span class="helptext">
+                Usá letras, números o símbolos como @ . + - _
+            </span>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">Contraseña</label>
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+            <span class="helptext">
+                Mínimo 8 caracteres. No puede ser demasiado común ni totalmente numérica.
+            </span>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">Confirmar contraseña</label>
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </div>
+
+        <button type="submit" class="registro-btn">
+            Registrarse
+        </button>
+    </form>
+
+    <div class="login-link">
+        ¿Ya tenés cuenta?
+        <a href="{% url 'login' %}">Iniciá sesión</a>
+    </div>
+
+</div>
+
+{% endblock %}

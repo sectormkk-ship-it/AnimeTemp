@@ -1,0 +1,323 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+<style>
+    .hero {
+        min-height: 300px;
+        background: linear-gradient(rgba(2, 6, 23, 0.75), rgba(15, 23, 42, 0.95)),
+            url("https://images.unsplash.com/photo-1578632767115-351597cf2477");
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .hero-content {
+        max-width: 800px;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+        color: #38bdf8;
+        margin-bottom: 15px;
+    }
+
+    .hero p {
+        font-size: 18px;
+        color: #cbd5e1;
+        margin-bottom: 25px;
+    }
+
+    .hero-btn {
+        background: #38bdf8;
+        color: #020617;
+        padding: 14px 24px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .hero-btn:hover {
+        background: #0ea5e9;
+    }
+
+    .temporadas {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding: 25px;
+        flex-wrap: wrap;
+    }
+
+    .temporadas a {
+        background: #1e293b;
+        color: #38bdf8;
+        padding: 12px 20px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: bold;
+        border: 1px solid #38bdf8;
+        transition: 0.2s;
+    }
+
+    .temporadas a:hover {
+        background: #38bdf8;
+        color: #020617;
+    }
+
+    .navbar {
+        background: #020617;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #38bdf8;
+    }
+
+    .logo {
+        font-size: 24px;
+        font-weight: bold;
+        color: #38bdf8;
+    }
+
+    .nav-links a {
+        color: #cbd5e1;
+        text-decoration: none;
+        margin-left: 20px;
+        font-weight: bold;
+    }
+
+    .nav-links a:hover {
+        color: #38bdf8;
+    }
+
+    footer {
+        text-align: center;
+        padding: 25px;
+        background: #020617;
+        color: #94a3b8;
+        border-top: 1px solid #38bdf8;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: white;
+    }
+
+    header {
+        background: #111827;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 2px solid #38bdf8;
+    }
+
+    h1 {
+        margin: 0;
+        color: #38bdf8;
+    }
+
+    .card:hover {
+        transform: scale(1.03);
+    }
+
+
+    .catalogo-horizontal {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+        padding: 30px;
+    }
+
+    .puntuacion {
+        color: #facc15;
+        font-weight: bold;
+    }
+
+    .anime-card-horizontal {
+        display: flex;
+        cursor: pointer;
+        gap: 20px;
+        background: #1e293b;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 25px;
+        color: white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        transition: transform 0.2s ease;
+        border: 1px solid rgba(56, 189, 248, 0.15);
+    }
+
+    .anime-card-horizontal:hover {
+    transform: scale(1.01);
+    border-color: rgba(56, 189, 248, 0.45);
+}
+
+    @media (max-width: 1200px) {
+        .catalogo-horizontal {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .anime-card-horizontal {
+        display: flex;
+        gap: 20px;
+        background: #1e293b;
+        border-radius: 18px;
+        padding: 24px;
+        color: white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        transition: transform 0.2s ease;
+        border: 1px solid rgba(56, 189, 248, 0.15);
+        min-height: 360px;
+        align-items: flex-start;
+    }
+
+    .anime-img-box img {
+        width: 170px;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 14px;
+    }
+
+    .anime-contenido {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex: 1;
+        height: 100%;
+    }
+
+    .anime-contenido h2 {
+        color: #38bdf8;
+        margin-bottom: 10px;
+    }
+
+    .anime-desc {
+        line-height: 1.5;
+        font-size: 15px;
+        margin-bottom: 15px;
+    }
+
+    .anime-info {
+        margin-top: 18px;
+        margin-bottom: 18px;
+    }
+
+    .detalle-btn {
+    margin-top: auto;
+}
+
+    .detalle-btn:hover {
+        background: #0ea5e9;
+    }
+
+    @media (max-width: 768px) {
+        .anime-card-horizontal {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .anime-img-box img {
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+        }
+
+        .anime-info {
+            text-align: left;
+            width: 100%;
+        }
+    }
+</style>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Catálogo de Anime por Temporada</h1>
+        <p>Explorá estrenos, clásicos y animes populares organizados por temporada, género y puntuación.</p>
+        <a href="#catalogo" class="hero-btn">Explorar catálogo</a>
+    </div>
+</section>
+<div class="temporadas">
+    <a href="/?temporada=invierno">Invierno</a>
+    <a href="/?temporada=primavera">Primavera</a>
+    <a href="/?temporada=verano">Verano</a>
+    <a href="/?temporada=otoño">Otoño</a>
+    <a href="/">Todas</a>
+</div>
+<form method="GET" style="padding: 25px; text-align: center;">
+    <input type="text" name="buscar" placeholder="Buscar anime..." value="{{ busqueda|default:'' }}"
+        style="padding: 12px; width: 250px; border-radius: 8px; border: none;">
+
+    <select name="temporada" style="padding: 12px; border-radius: 8px;">
+        <option value="">Todas las temporadas</option>
+        <option value="invierno">Invierno</option>
+        <option value="primavera">Primavera</option>
+        <option value="verano">Verano</option>
+        <option value="otoño">Otoño</option>
+    </select>
+
+    <select name="genero" style="padding: 12px; border-radius: 8px;">
+        <option value="">Todos los géneros</option>
+        <option value="Acción">Acción</option>
+        <option value="Aventura">Aventura</option>
+        <option value="Comedia">Comedia</option>
+        <option value="Drama">Drama</option>
+        <option value="Fantasía">Fantasía</option>
+        <option value="Romance">Romance</option>
+        <option value="Terror">Terror</option>
+    </select>
+
+    <button type="submit" style="padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer;">
+        Buscar
+    </button>
+
+</form>
+
+<section id="catalogo" class="catalogo-horizontal">
+
+    {% for anime in animes %}
+    <a href="{% url 'detalle_anime' anime.id %}" style="text-decoration: none; color: inherit;">
+        <div class="anime-card-horizontal">
+
+            <div class="anime-img-box">
+                <img src="{{ anime.imagen }}" alt="{{ anime.titulo }}">
+            </div>
+
+            <div class="anime-contenido">
+                <h2>{{ anime.titulo }}</h2>
+
+                <p class="anime-desc">
+                    {{ anime.descripcion|truncatechars:220 }}
+                </p>
+
+                <div class="anime-info">
+                    <p><strong>Temporada:</strong> {{ anime.temporada }} {{ anime.anio }}</p>
+                    <p><strong>Género:</strong> {{ anime.genero }}</p>
+                    <p><strong>Episodios:</strong> {{ anime.episodios }}</p>
+                    <p><strong>Estado:</strong> {{ anime.estado }}</p>
+                    <p class="puntuacion">⭐ {{ anime.puntuacion }}</p>
+                </div>
+
+        
+            </div>
+
+        </div>
+    </a>
+
+    {% empty %}
+    <p>No se ha encontrado el anime.</p>
+    {% endfor %}
+</section>
+
+<footer>
+    <p>© 2026 AnimeTemp - Catálogo de anime por temporada</p>
+</footer>
+
+
+{% endblock %}

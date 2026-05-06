@@ -1,0 +1,305 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .editar-container {
+        max-width: 850px;
+        margin: 60px auto;
+        background: #1e293b;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.35);
+    }
+
+    .editar-container h1 {
+        text-align: center;
+        color: #38bdf8;
+        margin-bottom: 35px;
+    }
+
+    .preview-box {
+        background: #0f172a;
+        padding: 25px;
+        border-radius: 18px;
+        margin-bottom: 25px;
+    }
+
+    .preview-box h3 {
+        color: #38bdf8;
+        margin-bottom: 15px;
+    }
+
+    .avatar-label {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .avatar-preview {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #38bdf8;
+    }
+
+    .plus-badge {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #38bdf8;
+        color: #020617;
+        font-size: 26px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid #0f172a;
+    }
+
+    .banner-label {
+        position: relative;
+        display: block;
+        cursor: pointer;
+    }
+
+    .banner-preview {
+        width: 100%;
+        height: 190px;
+        object-fit: cover;
+        border-radius: 15px;
+        border: 2px solid #1e293b;
+    }
+
+    .banner-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.35);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        opacity: 0;
+        transition: 0.2s;
+    }
+
+    .banner-label:hover .banner-overlay {
+        opacity: 1;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .delete-label {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 10px 16px;
+        background: #ef4444;
+        color: white;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .delete-label input {
+        display: none;
+    }
+
+    .delete-label:has(input:checked) {
+        background: #991b1b;
+        outline: 2px solid #fca5a5;
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+        color: white;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #cbd5e1;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        box-sizing: border-box;
+    }
+
+    .form-group textarea {
+        min-height: 130px;
+        resize: vertical;
+    }
+
+    .guardar-btn {
+        width: 100%;
+        padding: 14px;
+        background: #38bdf8;
+        color: #020617;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .guardar-btn:hover {
+        background: #0ea5e9;
+    }
+</style>
+
+<div class="editar-container">
+
+    <h1>Editar Perfil</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="preview-box">
+            <h3>Foto de perfil</h3>
+
+            <label class="avatar-label">
+                <img class="avatar-preview"
+                     src="{% if form.instance.foto_perfil %}{{ form.instance.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
+                     alt="Foto de perfil">
+
+                <span class="plus-badge">+</span>
+                <input class="file-input" type="file" name="foto_perfil" accept="image/*">
+            </label>
+
+            {% if form.instance.foto_perfil %}
+                <br>
+                <label class="delete-label">
+                    {{ form.borrar_foto }}
+                    Borrar foto actual
+                </label>
+            {% endif %}
+        </div>
+
+        <div class="preview-box">
+            <h3>Fondo de perfil</h3>
+
+            <label class="banner-label">
+                <img class="banner-preview"
+                     src="{% if form.instance.fondo_perfil %}{{ form.instance.fondo_perfil.url }}{% else %}https://images.unsplash.com/photo-1578632767115-351597cf2477{% endif %}"
+                     alt="Fondo de perfil">
+
+                <div class="banner-overlay">Cambiar fondo</div>
+                <input class="file-input" type="file" name="fondo_perfil" accept="image/*">
+            </label>
+
+            {% if form.instance.fondo_perfil %}
+                <label class="delete-label">
+                    {{ form.borrar_fondo }}
+                    Borrar fondo actual
+                </label>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label>Biografía</label>
+            {{ form.bio }}
+        </div>
+
+        <div class="form-group">
+            <label>Género favorito</label>
+            {{ form.genero_favorito }}
+        </div>
+
+        <div class="form-group">
+            <label>Género que no querés que te recomienden</label>
+            {{ form.genero_no_recomendado }}
+        </div>
+
+        <div class="form-group">
+            <label>Anime favorito</label>
+            {{ form.anime_favorito }}
+        </div>
+
+        <button class="guardar-btn" type="submit">Guardar Cambios</button>
+    </form>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const borrarFoto = document.querySelector('input[name="borrar_foto"]');
+    const borrarFondo = document.querySelector('input[name="borrar_fondo"]');
+
+    const avatarPreview = document.querySelector('.avatar-preview');
+    const bannerPreview = document.querySelector('.banner-preview');
+
+    const fotoInput = document.querySelector('input[name="foto_perfil"]');
+    const fondoInput = document.querySelector('input[name="fondo_perfil"]');
+
+    if (borrarFoto && avatarPreview) {
+        borrarFoto.addEventListener('change', function () {
+            if (this.checked) {
+                avatarPreview.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            }
+        });
+    }
+
+    if (borrarFondo && bannerPreview) {
+        borrarFondo.addEventListener('change', function () {
+            if (this.checked) {
+                bannerPreview.src = "https://images.unsplash.com/photo-1578632767115-351597cf2477";
+            }
+        });
+    }
+
+    if (fotoInput && avatarPreview) {
+        fotoInput.addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (file) {
+                if (borrarFoto) {
+                    borrarFoto.checked = false;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    avatarPreview.src = e.target.result;
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (fondoInput && bannerPreview) {
+        fondoInput.addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (file) {
+                if (borrarFondo) {
+                    borrarFondo.checked = false;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    bannerPreview.src = e.target.result;
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

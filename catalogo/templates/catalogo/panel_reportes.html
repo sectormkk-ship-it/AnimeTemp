@@ -1,0 +1,124 @@
+{% extends "catalogo/base.html" %}
+
+{% block contenido %}
+
+<h2 style="color:#38bdf8;">📋 Panel de reportes</h2>
+
+<!-- =========================================================
+     REPORTES GENERALES DEL SISTEMA
+========================================================= -->
+<h3 style="margin-top:25px; color:#f8fafc;">⚠ Reportes generales</h3>
+
+{% if reportes_sistema %}
+    {% for reporte in reportes_sistema %}
+        <div style="background:#020617; border:1px solid rgba(56,189,248,.25); border-radius:14px; padding:15px; margin-bottom:12px;">
+
+            <strong>Tipo:</strong> {{ reporte.get_tipo_display }}<br>
+            <strong>Reportante:</strong> {{ reporte.reportante.username }}<br>
+
+            {% if reporte.usuario_reportado %}
+                <strong>Usuario reportado:</strong> {{ reporte.usuario_reportado.username }}<br>
+            {% endif %}
+
+            <strong>Motivo:</strong> {{ reporte.motivo|default:"Sin motivo" }}<br>
+            <strong>Fecha:</strong> {{ reporte.fecha|date:"d/m/Y H:i" }}<br>
+
+            <strong>Revisado:</strong>
+            {% if reporte.revisado %}
+                ✅ Sí
+            {% else %}
+                ❌ No
+            {% endif %}
+
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No hay reportes generales.</p>
+{% endif %}
+
+<!-- =========================================================
+     REPORTES DIRECTOS DE USUARIOS
+========================================================= -->
+<h3 style="margin-top:35px; color:#f87171;">🚩 Reportes de usuarios</h3>
+
+{% if reportes_usuarios %}
+    {% for reporte in reportes_usuarios %}
+        <div style="background:#1e293b; border:1px solid rgba(239,68,68,.28); border-radius:14px; padding:15px; margin-bottom:12px;">
+
+            <strong>Usuario reportado:</strong> {{ reporte.usuario_reportado.username }}<br>
+            <strong>Reportado por:</strong> {{ reporte.reportante.username }}<br>
+            <strong>Motivo:</strong> {{ reporte.get_motivo_display }}<br>
+            <strong>Descripción:</strong> {{ reporte.descripcion|default:"Sin descripción." }}<br>
+            <strong>Fecha:</strong> {{ reporte.fecha|date:"d/m/Y H:i" }}<br>
+
+            <strong>Revisado:</strong>
+            {% if reporte.revisado %}
+                ✅ Sí
+            {% else %}
+                ❌ No
+            {% endif %}
+            
+            <strong>Usuario reportado:</strong> {{ reporte.usuario_reportado.username }}<br>
+
+            <strong>Strikes:</strong>
+            {% if reporte.total_strikes >= 3 %}
+            <span style="color:#ef4444; font-weight:bold;">
+            {{ reporte.total_strikes }} ⚠ Alto riesgo
+            </span>
+            {% elif reporte.total_strikes == 2 %}
+            <span style="color:#f97316; font-weight:bold;">
+            {{ reporte.total_strikes }} ⚠ Atención
+            </span>
+            {% elif reporte.total_strikes == 1 %}
+            <span style="color:#eab308; font-weight:bold;">
+            {{ reporte.total_strikes }} ⚠ Advertencia
+            </span>
+            {% else %}
+            <span style="color:#22c55e; font-weight:bold;">
+            0 ✅ Limpio
+            </span>
+            {% endif %}
+            <br>
+        
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+
+                <a href="{% url 'dar_strike_usuario' reporte.usuario_reportado.id %}"
+                onclick="return confirm('¿Aplicar strike a este usuario?');"
+                style="background:#eab308; color:black; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                ⚠ Dar strike
+                </a>
+
+                {% if not reporte.revisado %}
+                    <a href="{% url 'marcar_reporte_usuario_revisado' reporte.id %}"
+                       style="background:#22c55e; color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                        ✅ Marcar revisado
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'suspender_usuario_reportado' reporte.usuario_reportado.id %}"
+                   onclick="return confirm('¿Seguro que querés suspender a este usuario?');"
+                   style="background:#f97316; color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                    🚫 Suspender usuario
+                </a>
+
+                <a href="{% url 'eliminar_reporte_usuario' reporte.id %}"
+                   onclick="return confirm('¿Seguro que querés eliminar este reporte?');"
+                   style="background:#ef4444; color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                    🗑 Eliminar reporte
+                </a>
+
+                <a href="{% url 'quitar_strike_usuario' reporte.usuario_reportado.id %}"
+                onclick="return confirm('¿Quitar el último strike de este usuario?');"
+                style="background:#38bdf8; color:#020617; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                ↩ Quitar strike
+                </a>
+
+            </div>
+
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No hay reportes de usuarios todavía.</p>
+{% endif %}
+
+{% endblock %}

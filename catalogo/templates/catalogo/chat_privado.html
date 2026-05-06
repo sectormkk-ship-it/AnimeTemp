@@ -1,0 +1,170 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .chat-container {
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .chat-header {
+        font-size: 28px;
+        color: #38bdf8;
+        margin-bottom: 20px;
+    }
+
+    .mensajes-box {
+        background: #020617;
+        border-radius: 18px;
+        padding: 20px;
+        min-height: 500px;
+        max-height: 600px;
+        overflow-y: auto;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .mensaje {
+        padding: 12px 18px;
+        margin-bottom: 14px;
+        border-radius: 16px;
+        max-width: 70%;
+    }
+
+    .enviado {
+        background: #38bdf8;
+        color: #020617;
+        margin-left: auto;
+    }
+
+    .recibido {
+        background: #1e293b;
+        color: white;
+    }
+
+    .chat-form {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .chat-form input {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid #38bdf8;
+        background: #0f172a;
+        color: white;
+    }
+
+    .chat-form button {
+        background: #22c55e;
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 20px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+        Chat con {{ amigo.username }}
+    </div>
+
+    <div class="mensajes-box" id="mensajes-box">
+        {% for mensaje in mensajes %}
+            <div class="mensaje {% if mensaje.remitente == user %}enviado{% else %}recibido{% endif %}">
+                <strong>{{ mensaje.remitente.username }}</strong><br>
+                {{ mensaje.mensaje }}
+            </div>
+        {% empty %}
+            <p id="sin-mensajes">No hay mensajes todavía.</p>
+        {% endfor %}
+    </div>
+
+    <form method="post" class="chat-form" id="chat-form">
+        {% csrf_token %}
+        <input
+            type="text"
+            name="mensaje"
+            placeholder="Escribí tu mensaje..."
+            autocomplete="off"
+        >
+        <button type="submit">Enviar</button>
+    </form>
+
+</div>
+
+<script>
+    const usuarioId = "{{ amigo.id }}";
+    const currentUserId = "{{ user.id }}";
+
+    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
+    const chatSocket = new WebSocket(
+        protocol + window.location.host + "/ws/chat/" + usuarioId + "/"
+    );
+
+    const mensajesBox = document.getElementById("mensajes-box");
+    const form = document.getElementById("chat-form");
+    const input = form.querySelector("input[name='mensaje']");
+
+    function agregarMensaje(remitente, mensaje, fecha, esMio) {
+        const sinMensajes = document.getElementById("sin-mensajes");
+        if (sinMensajes) {
+            sinMensajes.remove();
+        }
+
+        const div = document.createElement("div");
+        div.className = "mensaje " + (esMio ? "enviado" : "recibido");
+
+        div.innerHTML = `
+            <strong>${remitente}</strong><br>
+            ${mensaje}<br>
+            <small>${fecha}</small>
+        `;
+
+        mensajesBox.appendChild(div);
+        mensajesBox.scrollTop = mensajesBox.scrollHeight;
+    }
+
+    chatSocket.onopen = function() {
+        console.log("WebSocket conectado");
+        mensajesBox.scrollTop = mensajesBox.scrollHeight;
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        agregarMensaje(
+            data.remitente,
+            data.mensaje,
+            data.fecha,
+            data.es_mio
+        );
+    };
+
+    chatSocket.onclose = function() {
+        console.error("WebSocket cerrado");
+    };
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const mensaje = input.value.trim();
+
+        if (!mensaje) return;
+
+        chatSocket.send(JSON.stringify({
+            mensaje: mensaje
+        }));
+
+        input.value = "";
+    });
+
+</script>
+
+{% endblock %}

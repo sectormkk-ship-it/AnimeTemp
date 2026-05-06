@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>AnimeTemp</title>
+    <link rel="stylesheet" href="{% static 'css/nexus.css' %}">
+</head>
+
+<body>
+<!-- BASE MEJORADO NEXUS CON NOTIFICACIONES ACTIVAS -->
+
+<div id="nexus-report-modal" class="nexus-report-modal" style="display:none;">
+    <div class="nexus-report-box">
+
+        <h2>🚩 Reportar usuario</h2>
+
+        <label>Motivo:</label>
+        <select id="nexus-report-motivo">
+            <option value="spam">Spam o publicidad</option>
+            <option value="acoso">Acoso o insultos</option>
+            <option value="contenido">Contenido inapropiado</option>
+            <option value="suplantacion">Suplantación de identidad</option>
+            <option value="otro">Otro</option>
+        </select>
+
+        <label>Descripción:</label>
+        <textarea id="nexus-report-descripcion" placeholder="Describe brevemente el problema..."></textarea>
+
+        <div class="nexus-report-actions">
+            <button type="button" onclick="enviarReporteNexus()">Enviar reporte</button>
+            <button type="button" onclick="cerrarReporteNexus()">Cancelar</button>
+        </div>
+
+    </div>
+</div>
+
+    
+    <nav class="navbar">
+    <div class="logo">
+        <a href="{% url 'inicio' %}">AnimeTemp</a>
+    </div>
+
+    <div class="nav-links">
+        <a href="{% url 'inicio' %}">Inicio</a>
+        <a href="{% url 'emision' %}">Emisión</a>
+
+        {% if user.is_staff %}
+            <a href="/admin/">Admin</a>
+            <a href="{% url 'panel_reportes' %}">📋 Reportes</a>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+
+    <a href="{% url 'perfil' %}" class="perfil-link">
+        <img src="{% if user.perfilusuario.foto_perfil %}{{ user.perfilusuario.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
+             alt="Perfil"
+             class="perfil-img">
+        <span>{{ user.username }}</span>
+        
+        </a>
+
+             <a href="{% url 'favoritos' %}">Favoritos</a>
+             <a class="logout-btn" href="{% url 'logout' %}">Cerrar sesión</a>
+
+        {% else %}
+
+             <a href="{% url 'registro' %}">Registro</a>
+             <a class="login-btn" href="{% url 'login' %}">Login</a>
+
+        {% endif %}
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-card">
+            {% block contenido %}
+            {% endblock %}
+        </div>
+    </main>
+
+    {% if user.is_authenticated %}
+    <div class="anime-panel-button" onclick="toggleAnimePanel()">
+        <div class="nexus-icon">💬</div>
+
+        <span
+            id="nexus-global-badge"
+            class="nexus-badge nexus-badge-message"
+            {% if total_mensajes_no_leidos == 0 %}style="display:none;"{% endif %}
+        >
+            {{ total_mensajes_no_leidos }}
+        </span>
+
+        <span
+            id="nexus-friend-request-badge"
+            class="nexus-badge nexus-badge-friend"
+            {% if total_notificaciones_nexus == 0 %}style="display:none;"{% endif %}
+        >
+            {{ total_notificaciones_nexus }}
+        </span>
+    </div>
+
+    <div class="anime-panel-window" id="animePanelWindow">
+        <div class="anime-panel-top">
+            <div>
+                <strong>AnimeTemp Nexus</strong>
+                <span>Chat, amigos y solicitudes</span>
+            </div>
+            <button type="button" onclick="toggleAnimePanel()">×</button>
+        </div>
+
+        <div class="anime-panel-body">
+            <aside class="anime-panel-sidebar">
+                <h4>Amigos</h4>
+
+                {% for item in amigos_nexus %}
+                <button
+                    type="button"
+                    class="anime-panel-friend"
+                    onclick="abrirChatNexus('{{ item.usuario.id }}', '{{ item.usuario.username|escapejs }}')"
+                    oncontextmenu="mostrarMenuNexus(event, '{{ item.usuario.id }}', '{{ item.usuario.username|escapejs }}')"
+                >
+                    <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                        <img
+                            src="{% if item.usuario.perfilusuario.foto_perfil %}{{ item.usuario.perfilusuario.foto_perfil.url }}{% else %}/static/img/default-profile.png{% endif %}"
+                            alt="Perfil"
+                            class="nexus-friend-avatar"
+                        >
+                        <span>{{ item.usuario.username }}</span>
+
+                        {% if item.silenciado %}
+                        <span class="nexus-muted-icon" title="Usuario silenciado">🔕</span>
+                        {% endif %}
+                    </div>
+
+                    <strong
+                        id="nexus-friend-badge-{{ item.usuario.id }}"
+                        {% if item.no_leidos == 0 %}style="display:none;"{% endif %}
+                    >
+                        {{ item.no_leidos }}
+                    </strong>
+                </button>
+                {% empty %}
+                <div class="anime-panel-note">
+                    Todavía no tenés amigos.
+                </div>
+                {% endfor %}
+
+                <hr style="border-color: rgba(56, 189, 248, 0.2);">
+
+                <a href="{% url 'buscar_usuarios' %}">👥 Buscar usuarios</a>
+            </aside>
+
+            <section class="anime-panel-main">
+                <div class="anime-panel-chat-title" id="nexus-chat-title">
+                    Seleccioná un amigo
+                </div>
+
+                <div class="anime-panel-messages" id="nexus-chat-messages">
+                    <p>Seleccioná un amigo para ver el historial.</p>
+                </div>
+
+                <div id="nexus-typing-indicator" class="nexus-typing" style="display:none;">
+                    <span id="nexus-typing-user"></span> está escribiendo...
+                </div>
+
+                <div class="anime-panel-input">
+                    <button type="button" class="emoji-btn" onclick="toggleEmojiPanelNexus()">😊</button>
+
+                    <div id="nexus-emoji-panel" class="nexus-emoji-panel" style="display:none;">
+                        <button type="button" onclick="insertarEmojiNexus('😀')">😀</button>
+                        <button type="button" onclick="insertarEmojiNexus('😂')">😂</button>
+                        <button type="button" onclick="insertarEmojiNexus('😍')">😍</button>
+                        <button type="button" onclick="insertarEmojiNexus('🔥')">🔥</button>
+                        <button type="button" onclick="insertarEmojiNexus('💀')">💀</button>
+                        <button type="button" onclick="insertarEmojiNexus('❤️')">❤️</button>
+                        <button type="button" onclick="insertarEmojiNexus('👍')">👍</button>
+                        <button type="button" onclick="insertarEmojiNexus('😎')">😎</button>
+                    </div>
+
+                    <input type="text" id="nexus-message-input" placeholder="Escribí un mensaje..." autocomplete="off">
+                    <button type="button" onclick="enviarMensajeNexus()">Enviar</button>
+                </div>
+            </section>
+
+            <aside class="anime-panel-right">
+                <h4>Notificaciones</h4>
+
+               {% if notificaciones_nexus %}
+
+    {% for notificacion in notificaciones_nexus %}
+
+        {% if notificacion.tipo == "amistad" and notificacion.solicitud %}
+
+            <div class="nexus-solicitud-card solicitud-nexus" id="solicitud-{{ notificacion.solicitud.id }}">
+
+                <div class="nexus-solicitud-header">
+                    👥 Solicitud de amistad
+                </div>
+
+                <div class="nexus-solicitud-user">
+                    {{ notificacion.solicitud.emisor.username }}
+                </div>
+
+                <div class="nexus-solicitud-actions">
+                    <button onclick="responderSolicitudNexus('{{ notificacion.solicitud.id }}', 'aceptar')" class="btn-aceptar">
+                        ✔
+                    </button>
+
+                    <button onclick="responderSolicitudNexus('{{ notificacion.solicitud.id }}', 'rechazar')" class="btn-rechazar">
+                        ✖
+                    </button>
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="anime-panel-note" style="margin-bottom: 12px;">
+                <strong>{{ notificacion.get_tipo_display }}</strong><br>
+                {{ notificacion.mensaje }}
+            </div>
+
+        {% endif %}
+
+    {% endfor %}
+
+{% else %}
+
+    <div class="anime-panel-note">No tenés notificaciones.</div>
+
+{% endif %}
+            </aside>
+        </div>
+    </div>
+
+    <div id="nexus-reviews-container"></div>
+
+    <div id="nexus-context-menu" class="nexus-context-menu">
+        <button type="button" onclick="verPerfilNexus()">👤 Ver perfil</button>
+        <button type="button" onclick="abrirResenasNexus(); return false;">📝 Ver reseñas</button>
+        <button type="button" onclick="silenciarUsuarioNexus()">🔕 Silenciar</button>
+        <button type="button" onclick="reportarUsuarioNexus()">🚩 Reportar</button>
+        <button type="button" onclick="bloquearUsuarioNexus()">🚫 Bloquear</button>
+        <button type="button" onclick="eliminarAmigoNexus()">🗑 Eliminar amigo</button>
+    </div>
+
+<script>
+    let nexusChatActualId = null;
+    let nexusChatActualUsername = null;
+    let nexusSocket = null;
+    let nexusNotificationSocket = null;
+    let nexusTypingTimeout = null;
+    let nexusMenuUsuarioId = null;
+    let nexusMenuUsername = null;
+    let nexusCerrandoSocketManual = false;
+
+    const FOTO_DEFAULT = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+    function getCSRFToken() {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith("csrftoken=")) {
+                return cookie.substring("csrftoken=".length);
+            }
+        }
+        return "";
+    }
+
+    function toggleEmojiPanelNexus() {
+        const panel = document.getElementById("nexus-emoji-panel");
+        if (!panel) return;
+        panel.style.display = panel.style.display === "none" || panel.style.display === "" ? "flex" : "none";
+    }
+
+    function insertarEmojiNexus(emoji) {
+        const input = document.getElementById("nexus-message-input");
+        if (!input) return;
+        input.value += emoji;
+        input.focus();
+    }
+
+    function toggleAnimePanel() {
+        const panel = document.getElementById("animePanelWindow");
+        if (!panel) return;
+
+        panel.classList.toggle("active");
+
+        if (panel.classList.contains("active")) {
+            setTimeout(() => {
+                fetch("/notificaciones/marcar-leidas/")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.ok) actualizarBadgeSolicitudes(0);
+                    })
+                    .catch(() => console.warn("No se pudieron marcar notificaciones como leídas."));
+            }, 1500);
+        }
+    }
+
+    function actualizarBadgeGlobal(total) {
+        const badgeGlobal = document.getElementById("nexus-global-badge");
+        if (!badgeGlobal) return;
+        const numero = Number(total) || 0;
+        badgeGlobal.textContent = numero;
+        badgeGlobal.style.display = numero > 0 ? "flex" : "none";
+    }
+
+    function actualizarBadgeSolicitudes(total) {
+        const badge = document.getElementById("nexus-friend-request-badge");
+        if (!badge) return;
+        const numero = Number(total) || 0;
+        badge.textContent = numero;
+        badge.style.display = numero > 0 ? "flex" : "none";
+    }
+
+    function actualizarBadgeAmigo(usuarioId, total) {
+        const badge = document.getElementById("nexus-friend-badge-" + usuarioId);
+        if (!badge) return;
+        const numero = Number(total) || 0;
+        badge.textContent = numero;
+        badge.style.display = numero > 0 ? "inline-block" : "none";
+    }
+
+    function mostrarMenuNexus(event, usuarioId, username) {
+        event.preventDefault();
+        nexusMenuUsuarioId = usuarioId;
+        nexusMenuUsername = username;
+
+        const menu = document.getElementById("nexus-context-menu");
+        if (!menu) return;
+
+        menu.style.left = event.clientX + "px";
+        menu.style.top = event.clientY + "px";
+        menu.style.display = "block";
+    }
+
+    document.addEventListener("click", function () {
+        const menu = document.getElementById("nexus-context-menu");
+        if (menu) menu.style.display = "none";
+    });
+
+    function verPerfilNexus() {
+        if (!nexusMenuUsuarioId) return;
+        window.location.href = "/perfil/" + nexusMenuUsuarioId + "/";
+    }
+
+    function verResenasNexus() {
+        abrirResenasNexus();
+    }
+
+    function eliminarAmigoNexus() {
+        if (!nexusMenuUsuarioId) return;
+        if (!confirm("¿Seguro que querés eliminar a " + nexusMenuUsername + " de tus amigos?")) return;
+
+        fetch("/amistad/eliminar/" + nexusMenuUsuarioId + "/")
+            .then(() => {
+                mostrarToastNexus(nexusMenuUsername + " fue eliminado de tus amigos.");
+                location.reload();
+            })
+            .catch(() => mostrarToastNexus("No se pudo eliminar el amigo."));
+    }
+
+    function bloquearUsuarioNexus() {
+        if (!nexusMenuUsuarioId) return;
+        if (!confirm("¿Seguro que querés bloquear a " + nexusMenuUsername + "?")) return;
+
+        fetch("/usuario/bloquear/" + nexusMenuUsuarioId + "/")
+            .then(() => {
+                mostrarToastNexus(nexusMenuUsername + " fue bloqueado.");
+                location.reload();
+            })
+            .catch(() => mostrarToastNexus("No se pudo bloquear el usuario."));
+    }
+
+    function silenciarUsuarioNexus() {
+        if (!nexusMenuUsuarioId) return;
+
+        fetch("/usuario/silenciar/" + nexusMenuUsuarioId + "/")
+            .then(response => response.json())
+            .then(data => {
+                mostrarToastNexus(data.mensaje || "Estado actualizado.");
+
+                const amigoBtn = document.querySelector(`.anime-panel-friend[onclick*="'${nexusMenuUsuarioId}'"]`);
+                if (!amigoBtn) return;
+
+                let icono = amigoBtn.querySelector(".nexus-muted-icon");
+
+                if (data.silenciado) {
+                    if (!icono) {
+                        icono = document.createElement("span");
+                        icono.className = "nexus-muted-icon";
+                        icono.title = "Usuario silenciado";
+                        icono.innerText = "🔕";
+                        amigoBtn.appendChild(icono);
+                    }
+                } else if (icono) {
+                    icono.remove();
+                }
+            })
+            .catch(() => mostrarToastNexus("No se pudo actualizar el estado de silencio."));
+    }
+
+    function mostrarToastNexus(mensaje) {
+        const toast = document.createElement("div");
+        toast.className = "nexus-toast";
+        toast.innerText = mensaje;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.classList.add("show"), 50);
+        setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => toast.remove(), 400);
+        }, 2200);
+    }
+
+    function responderSolicitudNexus(solicitudId, accion) {
+        const url = accion === "aceptar" ? "/amistad/aceptar/" + solicitudId + "/" : "/amistad/rechazar/" + solicitudId + "/";
+
+        fetch(url)
+            .then(() => {
+                const solicitud = document.getElementById("solicitud-" + solicitudId);
+                if (solicitud) solicitud.remove();
+
+                const badge = document.getElementById("nexus-friend-request-badge");
+                const totalActual = parseInt(badge?.textContent || "0", 10);
+                actualizarBadgeSolicitudes(Math.max(totalActual - 1, 0));
+
+                const quedanSolicitudes = document.querySelectorAll(".solicitud-nexus").length;
+                const panelDerecho = document.querySelector(".anime-panel-right");
+
+                if (panelDerecho && quedanSolicitudes === 0) {
+                    panelDerecho.innerHTML = `
+                        <h4>Notificaciones</h4>
+                        <div class="anime-panel-note">No tenés notificaciones.</div>
+                    `;
+                }
+            })
+            .catch(() => alert("No se pudo procesar la solicitud."));
+    }
+
+    function abrirChatNexus(usuarioId, username) {
+        nexusChatActualId = String(usuarioId);
+        nexusChatActualUsername = username;
+
+        const panel = document.getElementById("animePanelWindow");
+        const titulo = document.getElementById("nexus-chat-title");
+        const mensajes = document.getElementById("nexus-chat-messages");
+
+        if (panel && !panel.classList.contains("active")) panel.classList.add("active");
+        if (titulo) titulo.textContent = "Chat con " + username;
+        if (mensajes) mensajes.innerHTML = '<p id="nexus-vacio">Cargando mensajes...</p>';
+
+        cerrarSocketChatActual();
+
+        fetch("/chat/mensajes/" + usuarioId + "/")
+            .then(response => response.json())
+            .then(data => {
+                if (!mensajes) return;
+                mensajes.innerHTML = "";
+
+                if (!data.mensajes || data.mensajes.length === 0) {
+                    mensajes.innerHTML = '<p id="nexus-vacio">Todavía no hay mensajes con este usuario.</p>';
+                } else {
+                    data.mensajes.forEach(mensaje => {
+                        agregarMensajeNexus(
+                            mensaje.remitente,
+                            mensaje.mensaje || mensaje.texto || mensaje.message || "",
+                            mensaje.fecha || "",
+                            Boolean(mensaje.es_mio),
+                            mensaje.foto || FOTO_DEFAULT
+                        );
+                    });
+                }
+
+                actualizarBadgeGlobal(data.total_no_leidos || 0);
+                actualizarBadgeAmigo(usuarioId, 0);
+                conectarWebSocketNexus(usuarioId);
+            })
+            .catch(error => {
+                console.error("Error al cargar mensajes:", error);
+                if (mensajes) mensajes.innerHTML = '<p id="nexus-vacio">No se pudieron cargar los mensajes.</p>';
+            });
+    }
+
+    function escaparHTMLNexus(valor) {
+        const div = document.createElement("div");
+        div.textContent = valor ?? "";
+        return div.innerHTML;
+    }
+
+    function agregarMensajeNexus(remitente, mensaje, fecha, esMio, foto) {
+        const mensajes = document.getElementById("nexus-chat-messages");
+        if (!mensajes) return;
+
+        const vacio = document.getElementById("nexus-vacio");
+        if (vacio) vacio.remove();
+
+        const clase = esMio ? "mensaje mio" : "mensaje amigo";
+        const fotoFinal = foto || FOTO_DEFAULT;
+
+        const item = document.createElement("div");
+        item.className = clase;
+        item.innerHTML = `
+            <img src="${escaparHTMLNexus(fotoFinal)}" class="foto-chat" alt="Perfil">
+            <div class="burbuja-chat">
+                <strong>${escaparHTMLNexus(remitente)}</strong>
+                <p>${escaparHTMLNexus(mensaje)}</p>
+                <span>${escaparHTMLNexus(fecha)}</span>
+            </div>
+        `;
+
+        mensajes.appendChild(item);
+        mensajes.scrollTop = mensajes.scrollHeight;
+    }
+
+    function mostrarTypingNexus(username) {
+        const typingIndicator = document.getElementById("nexus-typing-indicator");
+        const typingUser = document.getElementById("nexus-typing-user");
+        if (!typingIndicator || !typingUser) return;
+
+        typingUser.textContent = username || nexusChatActualUsername || "El usuario";
+        typingIndicator.style.display = "block";
+
+        clearTimeout(nexusTypingTimeout);
+        nexusTypingTimeout = setTimeout(ocultarTypingNexus, 1600);
+    }
+
+    function ocultarTypingNexus() {
+        const typingIndicator = document.getElementById("nexus-typing-indicator");
+        if (typingIndicator) typingIndicator.style.display = "none";
+    }
+
+    function enviarTypingNexus() {
+        if (!nexusChatActualId) return;
+        if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) return;
+
+        nexusSocket.send(JSON.stringify({ typing: true }));
+    }
+
+    function cerrarSocketChatActual() {
+        if (nexusSocket) {
+            nexusCerrandoSocketManual = true;
+            nexusSocket.close();
+            nexusSocket = null;
+            setTimeout(() => { nexusCerrandoSocketManual = false; }, 250);
+        }
+    }
+
+    function conectarWebSocketNexus(usuarioId) {
+        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
+        nexusSocket = new WebSocket(protocol + window.location.host + "/ws/chat/" + usuarioId + "/");
+
+        nexusSocket.onopen = function () {
+            console.log("Nexus WebSocket conectado con usuario", usuarioId);
+        };
+
+        nexusSocket.onmessage = function (e) {
+            let data;
+            try {
+                data = JSON.parse(e.data);
+            } catch (error) {
+                console.error("Mensaje WebSocket inválido:", e.data);
+                return;
+            }
+
+            if (data.typing) {
+                mostrarTypingNexus(data.remitente || data.username || nexusChatActualUsername);
+                return;
+            }
+
+            ocultarTypingNexus();
+
+            const textoMensaje = data.mensaje || data.message || data.texto || data.contenido || "";
+            if (!textoMensaje) {
+                console.warn("Llegó un WebSocket sin campo de mensaje:", data);
+                return;
+            }
+
+            agregarMensajeNexus(
+                data.remitente || data.username || data.emisor || nexusChatActualUsername || "Usuario",
+                textoMensaje,
+                data.fecha || data.created_at || "",
+                Boolean(data.es_mio),
+                data.foto || data.avatar || FOTO_DEFAULT
+            );
+
+            if (!data.es_mio && nexusChatActualId) {
+                actualizarBadgeAmigo(nexusChatActualId, 0);
+            }
+        };
+
+        nexusSocket.onerror = function (error) {
+            console.error("Error en Nexus WebSocket:", error);
+        };
+
+        nexusSocket.onclose = function () {
+            console.log("Nexus WebSocket cerrado");
+        };
+    }
+
+    function enviarMensajeNexus() {
+        const input = document.getElementById("nexus-message-input");
+        if (!input) return;
+
+        const mensaje = input.value.trim();
+
+        if (!nexusChatActualId) {
+            alert("Primero seleccioná un amigo.");
+            return;
+        }
+
+        if (!mensaje) return;
+
+        if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) {
+            alert("El chat todavía no está conectado. Esperá un segundo o volvé a seleccionar el amigo.");
+            conectarWebSocketNexus(nexusChatActualId);
+            return;
+        }
+
+        nexusSocket.send(JSON.stringify({ mensaje: mensaje }));
+        input.value = "";
+        ocultarTypingNexus();
+    }
+
+    function conectarNotificacionesNexus() {
+        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
+        nexusNotificationSocket = new WebSocket(protocol + window.location.host + "/ws/notificaciones/");
+
+        nexusNotificationSocket.onmessage = function(e) {
+        let data;
+        try {
+        data = JSON.parse(e.data);
+        } catch (error) {
+        console.error("Notificación WebSocket inválida:", e.data);
+        return;
+        }
+
+        if (data.mensaje) {
+        mostrarToastNexus(data.mensaje);
+
+        // 🔥 NUEVO → agregar al panel en vivo
+        agregarNotificacionNexus(data.mensaje, data.tipo);
+        }
+
+        actualizarBadgeSolicitudes(data.total || data.total_notificaciones || 0);
+        };
+
+        nexusNotificationSocket.onerror = function(error) {
+            console.error("Error en WebSocket de notificaciones:", error);
+        };
+
+        nexusNotificationSocket.onclose = function() {
+            console.log("WebSocket de notificaciones cerrado");
+        };
+        
+        }
+        function agregarNotificacionNexus(mensaje, tipo, solicitudId = null) {
+    const panel = document.querySelector(".anime-panel-right");
+    if (!panel) return;
+
+    const nueva = document.createElement("div");
+    nueva.style.marginBottom = "12px";
+
+    if (tipo === "amistad" && solicitudId) {
+        nueva.className = "nexus-solicitud-card solicitud-nexus";
+        nueva.id = "solicitud-" + solicitudId;
+
+        nueva.innerHTML = `
+            <div class="nexus-solicitud-header">
+                👥 Solicitud de amistad
+            </div>
+
+            <div class="nexus-solicitud-user">
+                ${mensaje}
+            </div>
+
+            <div class="nexus-solicitud-actions">
+                <button type="button" onclick="responderSolicitudNexus('${solicitudId}', 'aceptar')" class="btn-aceptar">
+                    ✔
+                </button>
+
+                <button type="button" onclick="responderSolicitudNexus('${solicitudId}', 'rechazar')" class="btn-rechazar">
+                    ✖
+                </button>
+            </div>
+        `;
+    } else {
+        nueva.className = "anime-panel-note";
+        nueva.innerHTML = `
+            <strong>${tipo || "Notificación"}</strong><br>
+            ${mensaje}
+        `;
+    }
+
+    panel.prepend(nueva);
+}
+
+
+    function reportarUsuarioNexus() {
+        const modal = document.getElementById("nexus-report-modal");
+        if (!modal) {
+            console.error("No existe el modal nexus-report-modal");
+            return;
+        }
+        modal.style.display = "flex";
+    }
+
+    function cerrarReporteNexus() {
+        const modal = document.getElementById("nexus-report-modal");
+        if (modal) modal.style.display = "none";
+    }
+
+    function enviarReporteNexus() {
+        const motivo = document.getElementById("nexus-report-motivo")?.value || "otro";
+        const descripcion = document.getElementById("nexus-report-descripcion")?.value || "";
+
+        if (!nexusMenuUsuarioId) {
+            mostrarToastNexus("No se detectó el usuario a reportar.");
+            return;
+        }
+
+        fetch(`/usuario/reportar/${nexusMenuUsuarioId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: new URLSearchParams({ motivo: motivo, descripcion: descripcion }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            mostrarToastNexus(data.mensaje || "Reporte enviado.");
+            if (data.ok) {
+                cerrarReporteNexus();
+                const descripcionInput = document.getElementById("nexus-report-descripcion");
+                if (descripcionInput) descripcionInput.value = "";
+            }
+        })
+        .catch(error => {
+            console.error("Error al enviar reporte:", error);
+            mostrarToastNexus("No se pudo enviar el reporte.");
+        });
+    }
+
+    function abrirResenasNexus() {
+        const usuarioId = nexusMenuUsuarioId;
+
+        if (!usuarioId) {
+            alert("No se detectó el ID del usuario.");
+            return;
+        }
+
+        fetch(`/usuario/${usuarioId}/resenas/`)
+            .then(response => response.json())
+            .then(data => {
+                const cantidad = data.resenas ? data.resenas.length : 0;
+
+                let html = `
+                    <div class="nexus-reviews-modal">
+                        <div class="nexus-reviews-box">
+                            <aside class="nexus-reviews-sidebar">
+                                <h3>Filtros</h3>
+                                <button type="button" class="nexus-filter-btn active">Todas</button>
+                                <button type="button" class="nexus-filter-btn">Mejores</button>
+                                <button type="button" class="nexus-filter-btn">Recientes</button>
+                                <button type="button" class="nexus-filter-btn">Peores</button>
+                            </aside>
+
+                            <section class="nexus-reviews-main">
+                                <div class="nexus-profile-review-header" style="background-image: url('${data.usuario_banner || "/static/img/default-banner.jpg"}');">
+                                    <div class="nexus-profile-review-overlay"></div>
+                                    <div class="nexus-profile-review-content">
+                                        <img src="${data.usuario_foto || "/static/img/default-profile.png"}" class="nexus-user-avatar" alt="Perfil">
+                                        <div class="nexus-user-info">
+                                            <h2>${data.usuario_nombre || "Usuario"}</h2>
+                                            <span>${cantidad} reseñas</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="nexus-close-reviews" onclick="cerrarResenasNexus()">✖</button>
+                                </div>
+                                <div class="nexus-reviews-content">
+                `;
+
+                if (cantidad > 0) {
+                    data.resenas.forEach(resena => {
+                        html += crearCardResenaNexus(resena);
+                    });
+                } else {
+                    html += `<p class="nexus-empty-reviews">Este usuario todavía no escribió reseñas.</p>`;
+                }
+
+                html += `
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                `;
+
+                const container = document.getElementById("nexus-reviews-container");
+                if (container) container.innerHTML = html;
+                activarFiltrosResenasNexus(data.resenas || []);
+            })
+            .catch(error => {
+                console.error("Error al cargar reseñas:", error);
+                alert("Error al cargar las reseñas.");
+            });
+    }
+
+    function crearCardResenaNexus(resena) {
+        return `
+            <div class="nexus-review-card">
+                <img src="${resena.imagen}" alt="${escaparHTMLNexus(resena.anime)}">
+                <div class="nexus-review-info">
+                    <h3>${escaparHTMLNexus(resena.anime)}</h3>
+                    <p>${resena.texto || ""}</p>
+                </div>
+                <div class="nexus-review-meta">
+                    ⭐ ${resena.puntuacion}/10
+                    <small>${resena.fecha}</small>
+                </div>
+            </div>
+        `;
+    }
+
+    function activarFiltrosResenasNexus(resenas) {
+        const botones = document.querySelectorAll(".nexus-filter-btn");
+
+        botones.forEach(btn => {
+            btn.addEventListener("click", function () {
+                botones.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+
+                let filtradas = [...resenas];
+
+                if (this.textContent.includes("Mejores")) filtradas.sort((a, b) => b.puntuacion - a.puntuacion);
+                if (this.textContent.includes("Peores")) filtradas.sort((a, b) => a.puntuacion - b.puntuacion);
+                if (this.textContent.includes("Recientes")) filtradas.reverse();
+
+                renderizarResenasNexus(filtradas);
+            });
+        });
+    }
+
+    function renderizarResenasNexus(resenas) {
+        const contenedor = document.querySelector(".nexus-reviews-content");
+        if (!contenedor) return;
+
+        if (resenas.length > 0) {
+            contenedor.innerHTML = resenas.map(crearCardResenaNexus).join("");
+        } else {
+            contenedor.innerHTML = `<p class="nexus-empty-reviews">No hay reseñas disponibles.</p>`;
+        }
+    }
+
+    function cerrarResenasNexus() {
+        const container = document.getElementById("nexus-reviews-container");
+        if (container) container.innerHTML = "";
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const nexusInput = document.getElementById("nexus-message-input");
+
+        if (nexusInput) {
+            nexusInput.addEventListener("keypress", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    enviarMensajeNexus();
+                }
+            });
+
+            nexusInput.addEventListener("input", function () {
+                enviarTypingNexus();
+            });
+        }
+
+        conectarNotificacionesNexus();
+    });
+</script>
+    {% endif %}
+
+</body>
+
+</html>

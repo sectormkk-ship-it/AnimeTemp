@@ -1,0 +1,48 @@
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('favorito-ajax/<int:anime_id>/', views.agregar_favorito_ajax, name='agregar_favorito_ajax'),
+    path('buscar-animes/', views.buscar_animes_ajax, name='buscar_animes_ajax'),
+    path('', views.inicio, name='inicio'),
+    path('anime/<int:anime_id>/', views.detalle_anime, name='detalle_anime'),
+    path('registro/', views.registro, name='registro'),
+    path('favorito/<int:anime_id>/', views.agregar_favorito, name='agregar_favorito'),
+    path('favoritos/', views.ver_favoritos, name='favoritos'),
+    path('favoritos/quitar/<int:anime_id>/', views.quitar_favorito, name='quitar_favorito'),
+    path('perfil/', views.perfil, name='perfil'),
+    path('perfil/editar/', views.editar_perfil, name='editar_perfil'),
+    path('favorito-quitar-ajax/<int:anime_id>/', views.quitar_favorito_ajax, name='quitar_favorito_ajax'),
+    path('like-resena/<int:resena_id>/', views.like_resena, name='like_resena'),
+    path('emision/', views.emision, name='emision'),
+    path('amistad/enviar/<int:usuario_id>/',views.enviar_solicitud_amistad,name='enviar_solicitud_amistad'),
+    path('usuarios/buscar/', views.buscar_usuarios, name='buscar_usuarios'),
+    path('amistades/', views.solicitudes_amistad, name='solicitudes_amistad'),
+    path('amistad/aceptar/<int:solicitud_id>/',views.aceptar_solicitud,name='aceptar_solicitud'),
+    path('amistad/rechazar/<int:solicitud_id>/',views.rechazar_solicitud,name='rechazar_solicitud'),
+    path('social/', views.centro_social, name='centro_social'),
+    path('chat/<int:usuario_id>/', views.chat_privado, name='chat_privado'),
+    path('mensajes/', views.bandeja_mensajes, name='bandeja_mensajes'),
+    path("chat/mensajes/<int:usuario_id>/", views.obtener_mensajes, name="obtener_mensajes"),
+    path("chat/enviar/<int:usuario_id>/", views.enviar_mensaje_ajax, name="enviar_mensaje_ajax"),
+    path("amistad/eliminar/<int:usuario_id>/", views.eliminar_amigo, name="eliminar_amigo"),
+    path("usuario/bloquear/<int:usuario_id>/", views.bloquear_usuario, name="bloquear_usuario"),
+    path("usuario/silenciar/<int:usuario_id>/", views.silenciar_usuario, name="silenciar_usuario"),
+    path("usuario/reportar/<int:usuario_id>/", views.reportar_usuario, name="reportar_usuario"),
+    path("reportar-bug/", views.reportar_bug, name="reportar_bug"),
+    path("admin-reportes/", views.panel_reportes, name="panel_reportes"),
+    path("perfil/<int:usuario_id>/", views.perfil_publico, name="perfil_publico"),
+    path("usuario/<int:usuario_id>/resenas/", views.usuario_resenas_ajax, name="usuario_resenas_ajax"),
+    path("usuario/<int:usuario_id>/resenas/", views.usuario_resenas_ajax, name="ver_resenas_usuario"),
+    path("usuario/<int:usuario_id>/resenas/", views.usuario_resenas_ajax, name="usuario_resenas_ajax"),
+    path("usuario/reportar/<int:usuario_id>/",views.reportar_usuario,name="reportar_usuario"),
+    path("admin-reportes/usuario/<int:reporte_id>/revisado/", views.marcar_reporte_usuario_revisado, name="marcar_reporte_usuario_revisado"),
+    path("admin-reportes/usuario/<int:usuario_id>/suspender/", views.suspender_usuario_reportado, name="suspender_usuario_reportado"),
+    path("admin-reportes/usuario/<int:reporte_id>/eliminar/", views.eliminar_reporte_usuario, name="eliminar_reporte_usuario"),
+    path("admin-reportes/usuario/<int:usuario_id>/strike/",views.dar_strike_usuario,name="dar_strike_usuario"),
+    path("notificaciones/marcar-leidas/",views.marcar_notificaciones_leidas,name="marcar_notificaciones_leidas"),
+    path("admin-reportes/usuario/<int:usuario_id>/quitar-strike/",views.quitar_strike_usuario,name="quitar_strike_usuario"),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

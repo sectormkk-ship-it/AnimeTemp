@@ -1,0 +1,25 @@
+{% for solicitud in solicitudes %}
+    <div class="nexus-solicitud-card">
+
+        <div class="nexus-solicitud-header">
+            👥 Solicitud de amistad
+        </div>
+
+        <div class="nexus-solicitud-user">
+            {{ solicitud.emisor.username }}
+        </div>
+
+        <div class="nexus-solicitud-actions">
+            <a href="{% url 'aceptar_solicitud' solicitud.id %}" class="btn-aceptar">
+                ✔ Aceptar
+            </a>
+
+            <a href="{% url 'rechazar_solicitud' solicitud.id %}" class="btn-rechazar">
+                ✖ Rechazar
+            </a>
+        </div>
+
+    </div>
+{% empty %}
+    <p>No tenés solicitudes pendientes.</p>
+{% endfor %}

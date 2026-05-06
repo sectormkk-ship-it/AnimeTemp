@@ -1,0 +1,112 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .usuarios-box {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .usuarios-title {
+        color: #38bdf8;
+        margin-bottom: 20px;
+    }
+
+    .usuarios-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    .usuarios-input {
+        flex: 1;
+        padding: 14px 18px;
+        border-radius: 14px;
+        border: 1px solid #38bdf8;
+        background: #0f172a;
+        color: white;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .usuarios-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .usuarios-btn {
+        background: #22c55e;
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 22px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .usuario-card {
+        background: #020617;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .usuario-nombre {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .agregar-btn {
+        background: #38bdf8;
+        color: #020617;
+        padding: 10px 16px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .sin-resultados {
+        color: #94a3b8;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="usuarios-box">
+
+    <h2 class="usuarios-title">Buscar usuarios</h2>
+
+    <form method="get" class="usuarios-form">
+        <input
+            type="text"
+            name="buscar"
+            value="{{ busqueda }}"
+            placeholder="Escribí el nombre de un usuario..."
+            class="usuarios-input"
+        >
+
+        <button type="submit" class="usuarios-btn">
+            Buscar
+        </button>
+    </form>
+
+    {% for usuario in usuarios %}
+        <div class="usuario-card">
+            <div class="usuario-nombre">
+                {{ usuario.username }}
+            </div>
+
+            <a href="{% url 'enviar_solicitud_amistad' usuario.id %}" class="agregar-btn">
+                Agregar amigo
+            </a>
+        </div>
+    {% empty %}
+        <p class="sin-resultados">No se encontraron usuarios.</p>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

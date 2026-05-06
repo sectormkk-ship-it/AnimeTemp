@@ -1,0 +1,254 @@
+{% extends 'catalogo/base.html' %}
+
+{% block contenido %}
+
+<style>
+    .social-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr 280px;
+        gap: 20px;
+        min-height: 600px;
+    }
+
+    .social-panel {
+        background: #020617;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 18px;
+        padding: 18px;
+    }
+
+    .social-panel h3 {
+        color: #38bdf8;
+        margin-top: 0;
+    }
+
+    .social-item {
+        background: #0f172a;
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .chat-box {
+        display: flex;
+        flex-direction: column;
+        background: #020617;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .chat-header {
+        padding: 16px;
+        background: #0f172a;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+        color: #38bdf8;
+        font-weight: bold;
+    }
+
+    #chat-mensajes-flotante {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        color: white;
+        max-height: 500px;
+        min-height: 420px;
+    }
+
+    .chat-input {
+        display: flex;
+        gap: 10px;
+        padding: 16px;
+        border-top: 1px solid rgba(56, 189, 248, 0.3);
+        background: #0f172a;
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #38bdf8;
+        background: #020617;
+        color: white;
+    }
+
+    .chat-input button,
+    .mini-btn {
+        background: #38bdf8;
+        color: #020617;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 15px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .danger-btn {
+        background: #ef4444;
+        color: white;
+        border-radius: 999px;
+        padding: 8px 12px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+
+    .mensaje {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 14px;
+        align-items: flex-start;
+    }
+
+    .mensaje.mio {
+        flex-direction: row-reverse;
+    }
+
+    .foto-chat {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #38bdf8;
+    }
+
+    .burbuja-chat {
+        background: #0f172a;
+        padding: 10px 14px;
+        border-radius: 14px;
+        max-width: 70%;
+    }
+
+    .mensaje.mio .burbuja-chat {
+        background: #2563eb;
+    }
+
+    .burbuja-chat p {
+        margin: 6px 0;
+    }
+
+    .burbuja-chat span {
+        font-size: 11px;
+        opacity: 0.7;
+    }
+</style>
+
+<div class="social-layout">
+
+    <aside class="social-panel">
+        <h3>Amigos</h3>
+
+        {% for amistad in amigos %}
+        <div class="social-item">
+            {% if amistad.emisor == user %}
+            <button class="mini-btn" data-user-id="{{ amistad.receptor.id }}" onclick="abrirChat(this.dataset.userId)">
+                👤 {{ amistad.receptor.username }}
+            </button>
+            {% else %}
+            <button class="mini-btn" data-user-id="{{ amistad.emisor.id }}" onclick="abrirChat(this.dataset.userId)">
+                👤 {{ amistad.emisor.username }}
+            </button>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p>Todavía no tenés amigos.</p>
+        {% endfor %}
+    </aside>
+
+    <section class="chat-box">
+
+        <div class="chat-header" id="chat-header-flotante">
+            Seleccioná un amigo
+        </div>
+
+        <div id="chat-mensajes-flotante">
+            Seleccioná un amigo para ver el historial.
+        </div>
+
+        <form class="chat-input" onsubmit="return false;">
+            {% csrf_token %}
+            <input type="text" id="mensaje-input" placeholder="Escribí un mensaje..." autocomplete="off">
+            <button type="button" onclick="enviarMensaje()">Enviar</button>
+        </form>
+
+    </section>
+
+    <aside class="social-panel">
+        <h3>Notificaciones</h3>
+
+        {% for solicitud in solicitudes %}
+        <div class="social-item">
+            <p>{{ solicitud.emisor.username }} quiere agregarte.</p>
+
+            <a href="{% url 'aceptar_solicitud' solicitud.id %}" class="mini-btn">
+                Aceptar
+            </a>
+
+            <a href="{% url 'rechazar_solicitud' solicitud.id %}" class="danger-btn">
+                Rechazar
+            </a>
+        </div>
+        {% empty %}
+        <p>No tenés notificaciones nuevas.</p>
+        {% endfor %}
+    </aside>
+
+</div>
+
+<script>
+    let chatActualId = null;
+
+    function abrirChat(usuarioId) {
+        chatActualId = usuarioId;
+
+        fetch("/chat/mensajes/" + usuarioId + "/")
+            .then(response => response.json())
+            .then(data => {
+                const header = document.getElementById("chat-header-flotante");
+                const contenedor = document.getElementById("chat-mensajes-flotante");
+
+                header.innerHTML = "Chat con " + data.amigo;
+                contenedor.innerHTML = "";
+
+                if (data.mensajes.length === 0) {
+                    contenedor.innerHTML = "<p>Todavía no hay mensajes con este usuario.</p>";
+                    return;
+                }
+
+                data.mensajes.forEach(mensaje => {
+                    const clase = mensaje.es_mio ? "mensaje mio" : "mensaje amigo";
+
+                    contenedor.innerHTML +=
+                        '<div class="' + clase + '">' +
+                            '<img src="' + mensaje.foto + '" class="foto-chat">' +
+                            '<div class="burbuja-chat">' +
+                                '<strong>' + mensaje.remitente + '</strong>' +
+                                '<p>' + mensaje.mensaje + '</p>' +
+                                '<span>' + mensaje.fecha + '</span>' +
+                            '</div>' +
+                        '</div>';
+                });
+
+                contenedor.scrollTop = contenedor.scrollHeight;
+            });
+    }
+
+    function enviarMensaje() {
+        const input = document.getElementById("mensaje-input");
+        const mensaje = input.value.trim();
+
+        if (!chatActualId) {
+            alert("Primero seleccioná un amigo.");
+            return;
+        }
+
+        if (mensaje === "") {
+            return;
+        }
+
+        alert("Ahora falta conectar el envío en views.py. El historial ya está conectado.");
+    }
+</script>
+
+{% endblock %}

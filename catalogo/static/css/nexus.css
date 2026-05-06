@@ -1,0 +1,1228 @@
+
+/* =========================
+   BASE GENERAL jiji
+========================= */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #020617, #0f172a);
+    color: white;
+    min-height: 100vh;
+}
+
+.main-content {
+    padding: 40px;
+    max-width: 1400px;
+    margin: auto;
+}
+
+.page-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* =========================
+   NAVBAR
+========================= */
+.navbar {
+    background: #020617;
+    padding: 16px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #38bdf8;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.logo a {
+    color: #38bdf8;
+    font-size: 26px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.nav-links a,
+.nav-links span {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-links a:hover {
+    color: #38bdf8;
+}
+
+.logout-btn {
+    background: #ef4444;
+    color: white !important;
+    padding: 9px 15px;
+    border-radius: 999px;
+}
+
+.login-btn {
+    background: #38bdf8;
+    color: #020617 !important;
+    padding: 9px 15px;
+    border-radius: 999px;
+}
+
+.perfil-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.perfil-img,
+.foto-chat {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #38bdf8;
+}
+
+/* =========================
+   BOTÓN FLOTANTE NEXUS
+========================= */
+.anime-panel-button {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    width: 66px;
+    height: 66px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 3000;
+    box-shadow:
+        0 12px 35px rgba(56, 189, 248, 0.45),
+        inset 0 0 18px rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    overflow: visible;
+    transition: 0.25s ease;
+}
+
+.anime-panel-button:hover {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow:
+        0 18px 45px rgba(56, 189, 248, 0.65),
+        inset 0 0 18px rgba(255, 255, 255, 0.22);
+}
+
+.nexus-icon {
+    font-size: 30px;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
+}
+
+.nexus-badge {
+    position: absolute;
+    min-width: 23px;
+    height: 23px;
+    padding: 0 7px;
+    border-radius: 999px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #020617;
+    box-shadow: 0 0 14px rgba(0, 0, 0, 0.55);
+    z-index: 4000;
+}
+
+.nexus-badge-message {
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+
+.nexus-badge-friend {
+    bottom: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #22c55e, #15803d);
+}
+
+.nexus-badge-message::before {
+    content: "✉";
+    font-size: 10px;
+    margin-right: 3px;
+}
+
+.nexus-badge-friend::before {
+    content: "👥";
+    font-size: 10px;
+    margin-right: 3px;
+}
+
+/* =========================
+   PANEL FLOTANTE CHAT
+========================= */
+.anime-panel-window {
+    display: none;
+    position: fixed;
+    right: clamp(10px, 2vw, 25px);
+    bottom: clamp(80px, 10vh, 95px);
+    width: min(980px, 96vw);
+    height: min(560px, 78vh);
+    background: #020617;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    border-radius: 16px;
+    overflow: hidden;
+    z-index: 2999;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+}
+
+.anime-panel-window.active {
+    display: block;
+}
+
+.anime-panel-top {
+    height: 62px;
+    background: linear-gradient(to right, #0f172a, #1e293b);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 18px;
+}
+
+.anime-panel-top strong {
+    color: #38bdf8;
+    font-size: 18px;
+    display: block;
+}
+
+.anime-panel-top span {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.anime-panel-top button {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.anime-panel-body {
+    display: grid;
+    grid-template-columns: 210px 1fr 210px;
+    height: calc(100% - 62px);
+    min-height: 0;
+}
+
+.anime-panel-sidebar,
+.anime-panel-right {
+    background: #0f172a;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.anime-panel-sidebar {
+    border-right: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.anime-panel-right {
+    border-left: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.anime-panel-sidebar h4,
+.anime-panel-right h4 {
+    color: #38bdf8;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.anime-panel-sidebar a {
+    display: block;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    color: #cbd5e1;
+    text-decoration: none;
+    background: rgba(2, 6, 23, 0.6);
+    font-weight: bold;
+}
+
+.anime-panel-friend {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(2, 6, 23, 0.6);
+    color: #cbd5e1;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: left;
+}
+
+.anime-panel-friend:hover,
+.anime-panel-sidebar a:hover {
+    background: #1e293b;
+    color: #38bdf8;
+}
+
+.anime-panel-friend strong {
+    background: #ef4444;
+    color: white;
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-size: 12px;
+}
+
+.anime-panel-main {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    background: #020617;
+    height: 100%;
+    min-height: 0;
+}
+
+.anime-panel-chat-title {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    font-weight: bold;
+}
+
+.anime-panel-messages {
+    padding: 18px;
+    overflow-y: auto;
+    color: white;
+    min-height: 0;
+}
+
+.anime-panel-input {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    border-top: 1px solid rgba(56, 189, 248, 0.18);
+    background: #0f172a;
+}
+
+.anime-panel-input input {
+    flex: 1;
+    background: #020617;
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    border-radius: 10px;
+    color: white;
+    padding: 12px;
+}
+
+.anime-panel-input button {
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.anime-panel-note {
+    background: rgba(2, 6, 23, 0.65);
+    padding: 12px;
+    border-radius: 10px;
+    color: #94a3b8;
+}
+
+/* =========================
+   MENSAJES CHAT jiji
+========================= */
+
+.nexus-muted-icon {
+    margin-left: auto;
+    color: #ef4444;
+    font-size: 18px;
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.65));
+}
+
+.nexus-friend-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(56, 189, 248, 0.45);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    flex-shrink: 0;
+}
+
+.mensaje {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: flex-end;
+    max-width: 100%;
+}
+
+.mensaje.mio {
+    flex-direction: row-reverse;
+}
+
+.foto-chat {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    max-width: 38px;
+    max-height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #38bdf8;
+    flex-shrink: 0;
+}
+
+
+.burbuja-chat {
+    background: linear-gradient(135deg, #111827, #1e293b);
+    padding: 14px 17px;
+    border-radius: 16px 16px 16px 4px;
+    max-width: 78%;
+    min-width: 110px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+@media (max-width: 600px) {
+    .burbuja-chat {
+        max-width: 78%;
+    }
+
+    .foto-chat {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+        max-width: 34px;
+        max-height: 34px;
+    }
+}
+
+.mensaje.mio .burbuja-chat {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-radius: 16px 16px 4px 16px;
+    border: 1px solid rgba(147, 197, 253, 0.35);
+}
+
+.burbuja-chat strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 7px;
+    padding-bottom: 5px;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.burbuja-chat p {
+    margin: 8px 0;
+    line-height: 1.5;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.burbuja-chat span {
+    display: block;
+    font-size: 10px;
+    opacity: 0.7;
+    margin-top: 12px;
+    padding-top: 6px;
+    text-align: right;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.foto-chat {
+    transition: 0.2s ease;
+}
+
+.mensaje:hover .foto-chat {
+    transform: scale(1.08);
+}
+
+.nexus-typing {
+    padding: 8px 18px;
+    font-size: 13px;
+    color: #94a3b8;
+    font-style: italic;
+    animation: pulseTyping 1s infinite;
+}
+
+/* =========================
+   EMOJIS CHAT
+========================= */
+.emoji-btn {
+    background: #1e293b;
+    border: none;
+    color: white;
+    font-size: 22px;
+    border-radius: 10px;
+    padding: 0 12px;
+    cursor: pointer;
+}
+
+.nexus-emoji-panel {
+    position: absolute;
+    bottom: 70px;
+    left: 15px;
+    background: #0f172a;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    z-index: 5000;
+}
+
+.nexus-emoji-panel button {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.nexus-emoji-panel button:hover {
+    transform: scale(1.25);
+}
+
+/* =========================
+   MENÚ CONTEXTUAL
+========================= */
+.nexus-context-menu {
+    position: fixed;
+    background: #0f172a;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 12px;
+    padding: 8px 0;
+    min-width: 180px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    display: none;
+}
+
+.nexus-context-menu button {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    text-align: left;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.nexus-context-menu button:hover {
+    background: #1e293b;
+    color: #38bdf8;
+}
+
+/* =========================
+   PERFIL
+========================= */
+.perfil-card {
+    background: #1e293b;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.perfil-fondo {
+    height: 230px;
+    background-size: cover;
+    background-position: center;
+}
+
+.perfil-info {
+    text-align: center;
+    padding: 0 35px 35px;
+}
+
+.perfil-avatar {
+    width: 145px;
+    height: 145px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1e293b;
+    margin-top: -72px;
+}
+
+.perfil-info h1 {
+    color: #38bdf8;
+    font-size: 42px;
+}
+
+.perfil-bio {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 14px;
+    margin: 25px 0;
+}
+
+.perfil-datos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.perfil-datos div {
+    background: #0f172a;
+    padding: 18px;
+    border-radius: 14px;
+}
+
+.perfil-datos strong {
+    color: #38bdf8;
+}
+
+.perfil-favoritos-publicos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.favorito-publico {
+    background: #0f172a;
+    border-radius: 14px;
+    padding: 10px;
+}
+
+.favorito-publico img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.perfil-toggle-btn {
+    width: 100%;
+    background: #0f172a;
+    color: #38bdf8;
+    border: none;
+    padding: 18px;
+    border-radius: 14px;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 25px;
+    transition: 0.25s ease;
+}
+
+.perfil-toggle-btn:hover {
+    background: #1e293b;
+}
+
+/* =========================
+   MODAL RESEÑAS - se puede usar ññññññ !!!! mentira !!!!!
+========================= */
+
+.nexus-user-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(59, 130, 246, 0.45);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+    flex-shrink: 0;
+}
+
+.nexus-reviews-modal {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 35%),
+        rgba(2, 6, 23, 0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(10px);
+    animation: fadeInNexus 0.25s ease;
+}
+
+.nexus-reviews-box {
+    width: min(1240px, 96vw);
+    height: min(780px, 84vh);
+    max-height: 88vh;
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(59, 130, 246, 0.38);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 245px minmax(0, 1fr);
+}
+
+.nexus-reviews-sidebar {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.92));
+    border-right: 1px solid rgba(148, 163, 184, 0.16);
+    padding: 36px 20px;
+}
+
+.nexus-reviews-sidebar h3 {
+    color: #e5e7eb;
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.nexus-filter-btn {
+    width: 100%;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #cbd5e1;
+    padding: 13px 15px;
+    border-radius: 13px;
+    text-align: left;
+    cursor: pointer;
+    font-weight: 800;
+    margin-bottom: 10px;
+    transition: 0.2s ease;
+}
+
+.nexus-filter-btn.active,
+.nexus-filter-btn:hover {
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    color: white;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.28);
+}
+
+.nexus-reviews-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.nexus-reviews-header h2 {
+    color: #f8fafc;
+    font-size: 32px;
+    margin: 0;
+    font-weight: 900;
+}
+
+.nexus-reviews-header {
+    padding: 28px 30px 22px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: rgba(15, 23, 42, 0.26);
+}
+
+.nexus-reviews-title h2 {
+    color: #f8fafc;
+    margin: 0 0 5px;
+    font-size: 28px;
+    font-weight: 950;
+    letter-spacing: -0.4px;
+}
+
+.nexus-reviews-title span {
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.nexus-reviews-header button {
+    background: rgba(15, 23, 42, 0.86);
+    color: #cbd5e1;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s ease;
+}
+
+.nexus-reviews-header button:hover {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.38);
+}
+
+.nexus-reviews-content {
+    padding: 20px 24px 28px;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.nexus-reviews-content::-webkit-scrollbar {
+    width: 9px;
+}
+
+.nexus-reviews-content::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.nexus-reviews-content::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.45);
+    border-radius: 999px;
+}
+
+.nexus-review-card {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr) 155px;
+    gap: 20px;
+    align-items: center;
+    background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.42));
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 19px;
+    padding: 14px 18px;
+    margin-bottom: 15px;
+    min-height: 142px;
+    transition: 0.22s ease;
+}
+
+.nexus-close-reviews {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(15, 23, 42, 0.85);
+    color: #cbd5e1;
+    font-size: 22px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.nexus-close-reviews:hover {
+    background: #ef4444;
+    color: white;
+    transform: rotate(90deg) scale(1.05);
+}
+
+.nexus-review-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.46);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.58));
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.25);
+}
+
+.nexus-review-card > img {
+    width: 96px;
+    height: 126px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.nexus-review-info {
+    min-width: 0;
+}
+
+.nexus-review-img {
+    width: 96px;
+    height: 126px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+}
+
+.nexus-review-info h3 {
+    color: #f8fafc;
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 950;
+    letter-spacing: -0.3px;
+}
+
+.nexus-review-score {
+    text-align: right;
+    color: #93c5fd;
+    font-weight: 900;
+    min-width: 95px;
+}
+
+.nexus-review-score .star {
+    color: #facc15;
+}
+
+.nexus-review-date {
+    display: block;
+    margin-top: 8px;
+    color: #bfdbfe;
+    font-size: 14px;
+}
+
+.nexus-review-info p {
+    color: #cbd5e1;
+    margin: 0;
+    line-height: 1.45;
+    font-size: 15px;
+}
+
+.nexus-review-info p img {
+    width: 42px !important;
+    height: 42px !important;
+    object-fit: contain;
+    vertical-align: middle;
+    margin: 0 3px;
+}
+
+.nexus-review-meta {
+    color: #93c5fd;
+    font-weight: 900;
+    text-align: right;
+    white-space: nowrap;
+    font-size: 15px;
+}
+
+.nexus-review-meta small {
+    display: block;
+    color: #93c5fd;
+    font-weight: 800;
+    margin-top: 5px;
+}
+
+.nexus-empty-reviews {
+    color: #cbd5e1;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px dashed rgba(148, 163, 184, 0.3);
+    padding: 30px;
+    border-radius: 18px;
+    text-align: center;
+}
+
+/* =========================================================
+   NEXUS REVIEW PROFILE HEADER (Banner + Avatar + Usuario) :D
+   ========================================================= */
+
+.nexus-profile-review-header {
+    position: relative;
+    min-height: 190px;
+    padding: 28px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 24px 0 0;
+    overflow: hidden;
+}
+
+.nexus-profile-review-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(2, 6, 23, 0.92),
+        rgba(2, 6, 23, 0.45),
+        rgba(2, 6, 23, 0.9)
+    );
+}
+
+.nexus-profile-review-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    gap: 18px;
+    height: 100%;
+}
+
+.nexus-profile-review-header .nexus-close-reviews {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    z-index: 3;
+}
+
+
+/* =========================================================
+   RESPONSIVE NEXUS WINDOWS
+   Chat flotante + Modal de reseñas
+========================================================= */
+
+@media (max-width: 900px) {
+    .anime-panel-window {
+        width: 94vw;
+        height: 82vh;
+        right: 3vw;
+        bottom: 90px;
+    }
+
+    .anime-panel-body {
+        grid-template-columns: 170px minmax(0, 1fr) 190px;
+    }
+
+    .anime-panel-right {
+        display: block;
+        padding: 12px;
+    }
+
+    .nexus-reviews-box {
+        width: 94vw;
+        height: 88vh;
+        grid-template-columns: 1fr;
+    }
+
+    .nexus-reviews-sidebar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+        padding: 14px;
+    }
+
+    .nexus-reviews-sidebar h3 {
+        display: none;
+    }
+
+    .nexus-filter-btn {
+        min-width: 110px;
+        text-align: center;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .main-content {
+        padding: 16px;
+    }
+
+    .anime-panel-window {
+        width: 96vw;
+        height: 86vh;
+        right: 2vw;
+        bottom: 80px;
+        border-radius: 18px;
+    }
+
+    .anime-panel-body {
+        grid-template-columns: 1fr;
+    }
+
+    .anime-panel-sidebar {
+        display: none;
+    }
+
+    .nexus-reviews-modal {
+        align-items: stretch;
+        padding: 10px;
+    }
+
+    .nexus-reviews-box {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border-radius: 20px;
+    }
+
+    .nexus-profile-review-header {
+        min-height: 150px;
+        padding: 20px;
+    }
+
+    .nexus-user-avatar {
+        width: 64px;
+        height: 64px;
+    }
+
+    .nexus-user-info h2 {
+        font-size: 22px;
+    }
+
+    .nexus-review-card {
+        grid-template-columns: 80px 1fr;
+        gap: 14px;
+    }
+
+    .nexus-review-card > img {
+        width: 72px;
+        height: 96px;
+    }
+
+    .nexus-review-meta {
+        grid-column: 1 / -1;
+        text-align: left;
+    }
+}
+
+/* =========================================================
+   NEXUS TOAST NOTIFICATIONS
+   ========================================================= */
+
+.nexus-toast {
+    position: fixed;
+    bottom: 35px;
+    right: 35px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 14px;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    font-weight: 700;
+    z-index: 99999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.35s ease;
+}
+
+.nexus-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================================================
+   NEXUS USER REPORT SYSTEM
+   ========================================================= */
+
+.nexus-report-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+.nexus-report-box {
+    width: min(500px, 92vw);
+    background: #0f172a;
+    padding: 28px;
+    border-radius: 18px;
+    border: 1px solid rgba(239,68,68,0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.nexus-report-box select,
+.nexus-report-box textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(148,163,184,0.25);
+    background: #1e293b;
+    color: white;
+}
+
+.nexus-report-box textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.nexus-report-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* =========================
+   ANIMACIONES:D
+========================= */
+@keyframes fadeInNexus {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes mensajeEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes pulseTyping {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+/* ============================= */
+/* SOLICITUDES DE AMISTAD (PRO) */
+/* ============================= */
+
+.nexus-solicitud-card {
+    background: linear-gradient(145deg, #0f172a, #020617);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    transition: 0.2s;
+}
+
+.nexus-solicitud-card:hover {
+    border-color: #38bdf8;
+    transform: scale(1.02);
+}
+
+.nexus-solicitud-header {
+    font-size: 12px;
+    color: #38bdf8;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.nexus-solicitud-user {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.nexus-solicitud-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-aceptar {
+    flex: 1;
+    text-align: center;
+    background: #22c55e;
+    color: white;
+    padding: 6px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-rechazar {
+    flex: 1;
+    text-align: center;
+    background: #ef4444;
+    color: white;
+    padding: 6px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+

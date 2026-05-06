@@ -1,0 +1,39 @@
+<div class="nexus-reviews-modal">
+    <div class="nexus-reviews-box">
+
+        <div class="nexus-reviews-header">
+            <h2>📝 Reseñas de {{ usuario.username }}</h2>
+            <button onclick="cerrarResenasNexus()">✖</button>
+        </div>
+
+        <div class="nexus-reviews-content">
+            {% if resenas %}
+                {% for resena in resenas %}
+                    <div class="nexus-review-card">
+
+                        {% if resena.anime.imagen %}
+                            <img src="{{ resena.anime.imagen }}" alt="{{ resena.anime.titulo }}">
+                        {% endif %}
+
+                        <div class="nexus-review-info">
+                            <h3>{{ resena.anime.titulo }}</h3>
+
+                            <p>{{ resena.texto }}</p>
+
+                            <div class="nexus-review-meta">
+                                ⭐ {{ resena.puntuacion }}/10
+                                · {{ resena.fecha|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="nexus-empty-reviews">
+                    Este usuario todavía no escribió reseñas.
+                </p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>

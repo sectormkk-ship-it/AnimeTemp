@@ -1,0 +1,71 @@
+{% extends "catalogo/base.html" %}
+
+{% block contenido %}
+
+<div class="perfil-card">
+
+    <div class="perfil-fondo"
+        style="background-image: url('{% if perfil_usuario.fondo_perfil %}{{ perfil_usuario.fondo_perfil.url }}{% else %}https://images.unsplash.com/photo-1528164344705-47542687000d{% endif %}');">
+    </div>
+
+    <div class="perfil-info">
+        <img class="perfil-avatar"
+            src="{% if perfil_usuario.foto_perfil %}{{ perfil_usuario.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}">
+
+        <h1>{{ usuario_perfil.username }}</h1>
+
+        <p><strong>Favoritos guardados:</strong> {{ favoritos_count }}</p>
+        <p><strong>Fecha de registro:</strong> {{ usuario_perfil.date_joined|date:"d/m/Y" }}</p>
+
+        <div class="perfil-bio">
+            {{ perfil_usuario.bio|default:"Este usuario todavía no escribió una bio." }}
+        </div>
+
+        <div class="perfil-datos">
+            <div>
+                <strong>Género favorito</strong>
+                <p>{{ perfil_usuario.genero_favorito|default:"No definido" }}</p>
+            </div>
+
+            <div>
+                <strong>No recomendar</strong>
+                <p>{{ perfil_usuario.genero_no_recomendado|default:"Ninguno" }}</p>
+            </div>
+
+            <div>
+                <strong>Anime favorito</strong>
+                <p>{{ perfil_usuario.anime_favorito|default:"No definido" }}</p>
+            </div>
+        </div>
+
+        <button type="button" class="perfil-toggle-btn" onclick="toggleFavoritosPublicos()">
+             ▶ Ver animes favoritos
+        </button>
+
+        <div class="perfil-favoritos-publicos" id="favoritos-publicos" style="display:none;">
+            {% for favorito in favoritos %}
+                <div class="favorito-publico">
+                    <img src="{{ favorito.anime.imagen }}">
+                    <p>{{ favorito.anime.titulo }}</p>
+                </div>
+            {% empty %}
+                <p>Este usuario todavía no tiene favoritos públicos.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFavoritosPublicos() {
+    const panel = document.getElementById("favoritos-publicos");
+
+    if (!panel) return;
+
+    panel.style.display =
+        panel.style.display === "none" || panel.style.display === ""
+            ? "grid"
+            : "none";
+}
+</script>
+
+{% endblock %}
