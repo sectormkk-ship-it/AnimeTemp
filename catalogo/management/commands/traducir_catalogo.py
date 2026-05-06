@@ -24,22 +24,22 @@ class Command(BaseCommand):
             try:
                 cambio = False
 
-                if anime.titulo and not getattr(anime, "titulo_es", None):
+                if anime.descripcion:
                     anime.titulo_es = anime.titulo
                     cambio = True
 
-                if anime.descripcion and not getattr(anime, "descripcion_es", None):
+                if anime.descripcion:
                     texto = anime.descripcion[:4500]
                     anime.descripcion_es = traductor.translate(texto)
                     cambio = True
                     time.sleep(0.4)
 
-                if anime.genero and not getattr(anime, "genero_es", None):
+                if anime.descripcion:
                     anime.genero_es = traductor.translate(anime.genero)
                     cambio = True
                     time.sleep(0.2)
 
-                if anime.estado and not getattr(anime, "estado_es", None):
+                if anime.descripcion:
                     traducciones_estado = {
                         "En emisión": "En emisión",
                         "Airing": "En emisión",
