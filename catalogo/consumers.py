@@ -133,7 +133,8 @@ class NotificacionesConsumer(AsyncWebsocketConsumer):
 
     async def enviar_notificacion(self, event):
         await self.send(text_data=json.dumps({
-            "mensaje": event["mensaje"],
-            "tipo": event["tipo"],
-            "total": event["total"],
+                 "mensaje": event["mensaje"],
+                 "tipo": event["tipo"],
+                 "total": event["total"],
+                 "solicitud_id": event.get("solicitud_id"),  # 🔥 ESTA LINEA
         }))

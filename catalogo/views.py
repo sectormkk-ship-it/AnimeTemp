@@ -535,7 +535,8 @@ def enviar_solicitud_amistad(request, usuario_id):
     enviar_notificacion_nexus(
         receptor,
         f"👥 {request.user.username} quiere agregarte como amigo.",
-        "amistad"
+        "amistad",
+        solicitud.id  # 🔥 ESTA LINEA
     )
 
     return redirect("buscar_usuarios")
@@ -996,7 +997,7 @@ def marcar_notificaciones_leidas(request):
 
     return JsonResponse({"ok": True})
 
-def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema"):
+def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema", solicitud_id=None):
     total = Notificacion.objects.filter(
         usuario=usuario,
         leida=False
@@ -1011,5 +1012,6 @@ def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema"):
             "mensaje": mensaje,
             "tipo": tipo,
             "total": total,
+            "solicitud_id": solicitud_id,
         }
     )
