@@ -643,7 +643,7 @@
         mostrarToastNexus(data.mensaje);
 
         // 🔥 NUEVO → agregar al panel en vivo
-        agregarNotificacionNexus(data.mensaje, data.tipo);
+        agregarNotificacionNexus(data.mensaje, data.tipo, data.solicitud_id);
         }
 
         actualizarBadgeSolicitudes(data.total || data.total_notificaciones || 0);
