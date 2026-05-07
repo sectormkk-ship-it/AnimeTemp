@@ -46,22 +46,42 @@ class Command(BaseCommand):
             try:
                 cambio = False
 
-                if anime.titulo:
+                # =========================
+                # TITULO
+                # =========================
+                if anime.titulo and not anime.titulo_es:
                     anime.titulo_es = anime.titulo
                     cambio = True
 
-                if anime.descripcion:
+                # =========================
+                # DESCRIPCION
+                # =========================
+                if anime.descripcion and not anime.descripcion_es:
                     texto = anime.descripcion[:4500]
+
                     anime.descripcion_es = traductor.translate(texto)
+
                     cambio = True
+
                     time.sleep(0.4)
 
-                if anime.genero:
-                    anime.genero_es = traductor.translate(anime.genero)
+                # =========================
+                # GENERO
+                # =========================
+                if anime.genero and not anime.genero_es:
+                    anime.genero_es = traductor.translate(
+                        anime.genero
+                    )
+
                     cambio = True
+
                     time.sleep(0.2)
 
-                if anime.estado:
+                # =========================
+                # ESTADO
+                # =========================
+                if anime.estado and not anime.estado_es:
+
                     traducciones_estado = {
                         "En emisión": "En emisión",
                         "Airing": "En emisión",
@@ -77,8 +97,12 @@ class Command(BaseCommand):
                     )
 
                     cambio = True
+
                     time.sleep(0.2)
 
+                # =========================
+                # GUARDAR
+                # =========================
                 if cambio:
                     anime.save()
 
@@ -89,15 +113,24 @@ class Command(BaseCommand):
                             f"Traducido: {anime.id} - {anime.titulo}"
                         )
                     )
+
                 else:
                     omitidos += 1
+
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Omitido (ya traducido): "
+                            f"{anime.id} - {anime.titulo}"
+                        )
+                    )
 
             except Exception as e:
                 errores += 1
 
                 self.stdout.write(
                     self.style.ERROR(
-                        f"Error traduciendo {anime.titulo}: {e}"
+                        f"Error traduciendo "
+                        f"{anime.titulo}: {e}"
                     )
                 )
 
@@ -108,13 +141,19 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-            self.style.SUCCESS(f"Traducidos: {traducidos}")
+            self.style.SUCCESS(
+                f"Traducidos: {traducidos}"
+            )
         )
 
         self.stdout.write(
-            self.style.WARNING(f"Omitidos: {omitidos}")
+            self.style.WARNING(
+                f"Omitidos: {omitidos}"
+            )
         )
 
         self.stdout.write(
-            self.style.ERROR(f"Errores: {errores}")
+            self.style.ERROR(
+                f"Errores: {errores}"
+            )
         )
