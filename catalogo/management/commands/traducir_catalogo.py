@@ -7,24 +7,46 @@ from catalogo.models import Anime
 class Command(BaseCommand):
     help = "Traduce automáticamente el catálogo de anime al español"
 
-    def handle(self, *args, **kwargs):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--desde",
+            type=int,
+            default=1
+        )
+
+        parser.add_argument(
+            "--hasta",
+            type=int,
+            default=999999
+        )
+
+    def handle(self, *args, **options):
+        desde = options["desde"]
+        hasta = options["hasta"]
+
         traductor = GoogleTranslator(source="auto", target="es")
 
-        animes = Anime.objects.all().order_by("id")
+        animes = Anime.objects.filter(
+            id__gte=desde,
+            id__lte=hasta
+        ).order_by("id")
+
         total = animes.count()
         traducidos = 0
         omitidos = 0
         errores = 0
 
         self.stdout.write(
-            self.style.WARNING(f"Iniciando traducción del catálogo: {total} animes")
+            self.style.WARNING(
+                f"Iniciando traducción del catálogo: {total} animes"
+            )
         )
 
         for anime in animes:
             try:
                 cambio = False
 
-                if anime.descripcion:
+                if anime.titulo:
                     anime.titulo_es = anime.titulo
                     cambio = True
 
@@ -34,12 +56,12 @@ class Command(BaseCommand):
                     cambio = True
                     time.sleep(0.4)
 
-                if anime.descripcion:
+                if anime.genero:
                     anime.genero_es = traductor.translate(anime.genero)
                     cambio = True
                     time.sleep(0.2)
 
-                if anime.descripcion:
+                if anime.estado:
                     traducciones_estado = {
                         "En emisión": "En emisión",
                         "Airing": "En emisión",
@@ -53,26 +75,46 @@ class Command(BaseCommand):
                         anime.estado,
                         traductor.translate(anime.estado)
                     )
+
                     cambio = True
                     time.sleep(0.2)
 
                 if cambio:
                     anime.save()
+
                     traducidos += 1
+
                     self.stdout.write(
-                        self.style.SUCCESS(f"Traducido: {anime.titulo}")
+                        self.style.SUCCESS(
+                            f"Traducido: {anime.id} - {anime.titulo}"
+                        )
                     )
                 else:
                     omitidos += 1
 
             except Exception as e:
                 errores += 1
+
                 self.stdout.write(
-                    self.style.ERROR(f"Error traduciendo {anime.titulo}: {e}")
+                    self.style.ERROR(
+                        f"Error traduciendo {anime.titulo}: {e}"
+                    )
                 )
+
                 time.sleep(1)
 
-        self.stdout.write(self.style.SUCCESS("Traducción terminada."))
-        self.stdout.write(self.style.SUCCESS(f"Traducidos: {traducidos}"))
-        self.stdout.write(self.style.WARNING(f"Omitidos: {omitidos}"))
-        self.stdout.write(self.style.ERROR(f"Errores: {errores}"))
+        self.stdout.write(
+            self.style.SUCCESS("Traducción terminada.")
+        )
+
+        self.stdout.write(
+            self.style.SUCCESS(f"Traducidos: {traducidos}")
+        )
+
+        self.stdout.write(
+            self.style.WARNING(f"Omitidos: {omitidos}")
+        )
+
+        self.stdout.write(
+            self.style.ERROR(f"Errores: {errores}")
+        )
