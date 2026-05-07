@@ -290,17 +290,17 @@
             </div>
 
             <div class="anime-contenido">
-                <h2>{{ anime.titulo }}</h2>
+                <h2>{{ anime.titulo_es|default:anime.titulo }}</h2>
 
-                <p class="anime-desc">
-                    {{ anime.descripcion|truncatechars:220 }}
-                </p>
+                    <p class="anime-desc">
+                        {{ anime.descripcion_es|default:anime.descripcion|truncatechars:220 }}
+                    </p>
 
                 <div class="anime-info">
                     <p><strong>Temporada:</strong> {{ anime.temporada }} {{ anime.anio }}</p>
-                    <p><strong>Género:</strong> {{ anime.genero }}</p>
+                    <p><strong>Género:</strong> {{ anime.genero_es|default:anime.genero }}</p>
                     <p><strong>Episodios:</strong> {{ anime.episodios }}</p>
-                    <p><strong>Estado:</strong> {{ anime.estado }}</p>
+                    <p><strong>Estado:</strong> {{ anime.estado_es|default:anime.estado }}</p>
                     <p class="puntuacion">⭐ {{ anime.puntuacion }}</p>
                 </div>
 
