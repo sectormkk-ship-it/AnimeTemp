@@ -1046,6 +1046,7 @@ def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema", solicitud_id=Non
     
 @require_GET
 def traducir_catalogo_render(request):
+
     token = request.GET.get("token")
     token_seguro = os.environ.get("UPDATE_CATALOG_TOKEN")
 
@@ -1057,8 +1058,10 @@ def traducir_catalogo_render(request):
 
     desde = request.GET.get("desde")
     hasta = request.GET.get("hasta")
+    limite = request.GET.get("limite")
 
     try:
+
         kwargs = {}
 
         if desde:
@@ -1067,16 +1070,26 @@ def traducir_catalogo_render(request):
         if hasta:
             kwargs["hasta"] = int(hasta)
 
-        call_command("traducir_catalogo", **kwargs)
+        if limite:
+            kwargs["limite"] = int(limite)
+
+        call_command(
+            "traducir_catalogo",
+            **kwargs
+        )
 
         return JsonResponse({
             "ok": True,
-            "mensaje": "Catálogo traducido correctamente"
+            "mensaje": "Bloque de traducción ejecutado correctamente"
         })
 
     except Exception as e:
+
         return JsonResponse(
-            {"ok": False, "error": str(e)},
+            {
+                "ok": False,
+                "error": str(e)
+            },
             status=500
         )
     
