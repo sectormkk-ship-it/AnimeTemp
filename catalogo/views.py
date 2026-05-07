@@ -1050,14 +1050,35 @@ def traducir_catalogo_render(request):
     token_seguro = os.environ.get("UPDATE_CATALOG_TOKEN")
 
     if not token_seguro or token != token_seguro:
-        return JsonResponse({"ok": False, "error": "No autorizado"}, status=403)
+        return JsonResponse(
+            {"ok": False, "error": "No autorizado"},
+            status=403
+        )
+
+    desde = request.GET.get("desde")
+    hasta = request.GET.get("hasta")
 
     try:
-        call_command("traducir_catalogo")
-        return JsonResponse({"ok": True, "mensaje": "Catálogo traducido correctamente"})
+        kwargs = {}
+
+        if desde:
+            kwargs["desde"] = int(desde)
+
+        if hasta:
+            kwargs["hasta"] = int(hasta)
+
+        call_command("traducir_catalogo", **kwargs)
+
+        return JsonResponse({
+            "ok": True,
+            "mensaje": "Catálogo traducido correctamente"
+        })
+
     except Exception as e:
-        return JsonResponse({"ok": False, "error": str(e)}, status=500)    
-    
+        return JsonResponse(
+            {"ok": False, "error": str(e)},
+            status=500
+        )
     
 @require_GET
 def importar_catalogo_render(request):
