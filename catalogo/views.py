@@ -373,9 +373,12 @@ def perfil(request):
 
 @login_required
 def editar_perfil(request):
-    perfil_usuario, creado = PerfilUsuario.objects.get_or_create(usuario=request.user)
+    perfil_usuario, creado = PerfilUsuario.objects.get_or_create(
+        usuario=request.user
+    )
 
     if request.method == "POST":
+
         form = PerfilUsuarioForm(
             request.POST,
             request.FILES,
@@ -383,28 +386,41 @@ def editar_perfil(request):
         )
 
         if form.is_valid():
-            perfil_usuario = form.save(commit=False)
 
+            # BORRAR FOTO
             if form.cleaned_data.get("borrar_foto"):
-                if perfil_usuario.foto_perfil:
-                    perfil_usuario.foto_perfil.delete(save=False)
                 perfil_usuario.foto_perfil = None
 
+            # BORRAR FONDO
             if form.cleaned_data.get("borrar_fondo"):
-                if perfil_usuario.fondo_perfil:
-                    perfil_usuario.fondo_perfil.delete(save=False)
                 perfil_usuario.fondo_perfil = None
+
+            # NUEVA FOTO
+            if request.FILES.get("foto_perfil"):
+                perfil_usuario.foto_perfil = request.FILES["foto_perfil"]
+
+            # NUEVO FONDO
+            if request.FILES.get("fondo_perfil"):
+                perfil_usuario.fondo_perfil = request.FILES["fondo_perfil"]
+
+            perfil_usuario.bio = form.cleaned_data.get("bio")
+            perfil_usuario.genero_favorito = form.cleaned_data.get("genero_favorito")
+            perfil_usuario.genero_no_recomendado = form.cleaned_data.get("genero_no_recomendado")
+            perfil_usuario.anime_favorito = form.cleaned_data.get("anime_favorito")
 
             perfil_usuario.save()
 
             return redirect("perfil")
+
     else:
         form = PerfilUsuarioForm(instance=perfil_usuario)
 
     return render(
         request,
         "catalogo/editar_perfil.html",
-        {"form": form},
+        {
+            "form": form,
+        },
     )
 
 
