@@ -8,17 +8,8 @@ class Command(BaseCommand):
     help = "Traduce automáticamente el catálogo de anime al español"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--desde",
-            type=int,
-            default=1
-        )
-
-        parser.add_argument(
-            "--hasta",
-            type=int,
-            default=999999
-        )
+        parser.add_argument("--desde", type=int, default=1)
+        parser.add_argument("--hasta", type=int, default=999999)
 
     def handle(self, *args, **options):
         desde = options["desde"]
@@ -46,42 +37,34 @@ class Command(BaseCommand):
             try:
                 cambio = False
 
-                # =========================
-                # TITULO
-                # =========================
                 if anime.titulo and not anime.titulo_es:
                     anime.titulo_es = anime.titulo
                     cambio = True
 
-                # =========================
-                # DESCRIPCION
-                # =========================
-                if anime.descripcion and not anime.descripcion_es:
-                    texto = anime.descripcion[:4500]
-
-                    anime.descripcion_es = traductor.translate(texto)
-
-                    cambio = True
-
-                    time.sleep(0.4)
-
-                # =========================
-                # GENERO
-                # =========================
-                if anime.genero and not anime.genero_es:
-                    anime.genero_es = traductor.translate(
-                        anime.genero
+                if anime.descripcion:
+                    necesita_traduccion = (
+                        not anime.descripcion_es
+                        or anime.descripcion_es.strip() == anime.descripcion.strip()
                     )
 
-                    cambio = True
+                    if necesita_traduccion:
+                        texto = anime.descripcion[:4500]
+                        anime.descripcion_es = traductor.translate(texto)
+                        cambio = True
+                        time.sleep(0.4)
 
-                    time.sleep(0.2)
+                if anime.genero:
+                    necesita_genero = (
+                        not anime.genero_es
+                        or anime.genero_es.strip() == anime.genero.strip()
+                    )
 
-                # =========================
-                # ESTADO
-                # =========================
-                if anime.estado and not anime.estado_es:
+                    if necesita_genero:
+                        anime.genero_es = traductor.translate(anime.genero)
+                        cambio = True
+                        time.sleep(0.2)
 
+                if anime.estado:
                     traducciones_estado = {
                         "En emisión": "En emisión",
                         "Airing": "En emisión",
@@ -91,36 +74,38 @@ class Command(BaseCommand):
                         "Próximamente": "Próximamente",
                     }
 
-                    anime.estado_es = traducciones_estado.get(
-                        anime.estado,
-                        traductor.translate(anime.estado)
+                    estado_traducido = traducciones_estado.get(anime.estado)
+
+                    necesita_estado = (
+                        not anime.estado_es
+                        or anime.estado_es.strip() == anime.estado.strip()
+                        or anime.estado_es in ["Airing", "Finished Airing", "Not yet aired"]
                     )
 
-                    cambio = True
+                    if necesita_estado:
+                        if estado_traducido:
+                            anime.estado_es = estado_traducido
+                        else:
+                            anime.estado_es = traductor.translate(anime.estado)
 
-                    time.sleep(0.2)
+                        cambio = True
+                        time.sleep(0.2)
 
-                # =========================
-                # GUARDAR
-                # =========================
                 if cambio:
                     anime.save()
-
                     traducidos += 1
 
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f"Traducido: {anime.id} - {anime.titulo}"
+                            f"Traducido/corregido: {anime.id} - {anime.titulo}"
                         )
                     )
-
                 else:
                     omitidos += 1
 
                     self.stdout.write(
                         self.style.WARNING(
-                            f"Omitido (ya traducido): "
-                            f"{anime.id} - {anime.titulo}"
+                            f"Omitido: {anime.id} - {anime.titulo}"
                         )
                     )
 
@@ -129,31 +114,13 @@ class Command(BaseCommand):
 
                 self.stdout.write(
                     self.style.ERROR(
-                        f"Error traduciendo "
-                        f"{anime.titulo}: {e}"
+                        f"Error traduciendo {anime.id} - {anime.titulo}: {e}"
                     )
                 )
 
                 time.sleep(1)
 
-        self.stdout.write(
-            self.style.SUCCESS("Traducción terminada.")
-        )
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Traducidos: {traducidos}"
-            )
-        )
-
-        self.stdout.write(
-            self.style.WARNING(
-                f"Omitidos: {omitidos}"
-            )
-        )
-
-        self.stdout.write(
-            self.style.ERROR(
-                f"Errores: {errores}"
-            )
-        )
+        self.stdout.write(self.style.SUCCESS("Traducción terminada."))
+        self.stdout.write(self.style.SUCCESS(f"Traducidos/corregidos: {traducidos}"))
+        self.stdout.write(self.style.WARNING(f"Omitidos: {omitidos}"))
+        self.stdout.write(self.style.ERROR(f"Errores: {errores}"))
