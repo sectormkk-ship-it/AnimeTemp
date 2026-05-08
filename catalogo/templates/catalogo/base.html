@@ -73,10 +73,8 @@
     </nav>
 
     <main class="main-content">
-        <div class="page-card">
-            {% block contenido %}
-            {% endblock %}
-        </div>
+    {% block contenido %}
+    {% endblock %}
     </main>
 
     {% if user.is_authenticated %}
