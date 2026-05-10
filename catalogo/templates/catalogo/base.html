@@ -52,10 +52,10 @@
 
         {% if user.is_authenticated %}
 
-    <a href="{% url 'perfil' %}" class="perfil-link">
-        <img src="{% if user.perfilusuario.foto_perfil %}{{ user.perfilusuario.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
-             alt="Perfil"
-             class="perfil-img">
+        <a href="{% url 'perfil' %}" class="perfil-link">
+        <img src="{% if user.perfilusuario.foto_perfil %}{{ user.perfilusuario.foto_perfil }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
+        alt="Perfil"
+        class="perfil-img">
         <span>{{ user.username }}</span>
         
         </a>
@@ -120,7 +120,7 @@
                 >
                     <div style="display:flex; align-items:center; gap:10px; min-width:0;">
                         <img
-                            src="{% if item.usuario.perfilusuario.foto_perfil %}{{ item.usuario.perfilusuario.foto_perfil.url }}{% else %}/static/img/default-profile.png{% endif %}"
+                            src="{% if item.usuario.perfilusuario.foto_perfil %}{{ item.usuario.perfilusuario.foto_perfil }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
                             alt="Perfil"
                             class="nexus-friend-avatar"
                         >
@@ -400,18 +400,18 @@
             .catch(() => mostrarToastNexus("No se pudo actualizar el estado de silencio."));
     }
 
-    function mostrarToastNexus(mensaje) {
-        const toast = document.createElement("div");
-        toast.className = "nexus-toast";
-        toast.innerText = mensaje;
-        document.body.appendChild(toast);
+function mostrarToastNexus(mensaje, tipo = "sistema") {
+    const toast = document.createElement("div");
+    toast.className = "nexus-toast nexus-toast-" + tipo;
+    toast.innerText = mensaje;
+    document.body.appendChild(toast);
 
-        setTimeout(() => toast.classList.add("show"), 50);
-        setTimeout(() => {
-            toast.classList.remove("show");
-            setTimeout(() => toast.remove(), 400);
-        }, 2200);
-    }
+    setTimeout(() => toast.classList.add("show"), 50);
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 400);
+    }, 2600);
+}
 
     function responderSolicitudNexus(solicitudId, accion) {
         const url = accion === "aceptar" ? "/amistad/aceptar/" + solicitudId + "/" : "/amistad/rechazar/" + solicitudId + "/";
@@ -585,6 +585,10 @@
                 data.foto || data.avatar || FOTO_DEFAULT
             );
 
+            if (!data.es_mio) {
+            reproducirSonidoNotificacionNexus();
+            }
+
             if (!data.es_mio && nexusChatActualId) {
                 actualizarBadgeAmigo(nexusChatActualId, 0);
             }
@@ -637,12 +641,11 @@
         return;
         }
 
-        if (data.mensaje) {
-        mostrarToastNexus(data.mensaje);
-
-        // 🔥 NUEVO → agregar al panel en vivo
-        agregarNotificacionNexus(data.mensaje, data.tipo, data.solicitud_id);
-        }
+     if (data.mensaje) {
+        mostrarToastNexus(data.mensaje, data.tipo || "sistema");
+        reproducirSonidoNotificacionNexus(data.tipo || "sistema");
+        agregarNotificacionNexus(data.mensaje, data.tipo || "sistema", data.solicitud_id);
+      }
 
         actualizarBadgeSolicitudes(data.total || data.total_notificaciones || 0);
         };
@@ -656,9 +659,14 @@
         };
         
         }
-        function agregarNotificacionNexus(mensaje, tipo, solicitudId = null) {
+function agregarNotificacionNexus(mensaje, tipo = "sistema", solicitudId = null) {
     const panel = document.querySelector(".anime-panel-right");
     if (!panel) return;
+
+    const vacia = panel.querySelector(".anime-panel-note");
+    if (vacia && vacia.textContent.includes("No tenés notificaciones")) {
+        vacia.remove();
+    }
 
     const nueva = document.createElement("div");
     nueva.style.marginBottom = "12px";
@@ -668,34 +676,33 @@
         nueva.id = "solicitud-" + solicitudId;
 
         nueva.innerHTML = `
-            <div class="nexus-solicitud-header">
-                👥 Solicitud de amistad
-            </div>
-
-            <div class="nexus-solicitud-user">
-                ${mensaje}
-            </div>
+            <div class="nexus-solicitud-header">👥 Solicitud de amistad</div>
+            <div class="nexus-solicitud-user">${mensaje}</div>
 
             <div class="nexus-solicitud-actions">
-                <button type="button" onclick="responderSolicitudNexus('${solicitudId}', 'aceptar')" class="btn-aceptar">
-                    ✔
-                </button>
-
-                <button type="button" onclick="responderSolicitudNexus('${solicitudId}', 'rechazar')" class="btn-rechazar">
-                    ✖
-                </button>
+                <button type="button" onclick="responderSolicitudNexus('${solicitudId}', 'aceptar')" class="btn-aceptar">✔</button>
+                <button type="button" onclick="responderSolicitudNexus('${solicitudId}', 'rechazar')" class="btn-rechazar">✖</button>
             </div>
         `;
     } else {
-        nueva.className = "anime-panel-note";
+        const iconos = {
+            like: "❤️ Like",
+            respuesta: "💬 Respuesta",
+            nivel: "⬆ Nivel",
+            logro: "🏆 Logro",
+            strike: "⚠ Strike",
+            sistema: "🔔 Sistema",
+        };
+
+        nueva.className = "anime-panel-note nexus-note-" + tipo;
         nueva.innerHTML = `
-            <strong>${tipo || "Notificación"}</strong><br>
+            <strong>${iconos[tipo] || "🔔 Notificación"}</strong><br>
             ${mensaje}
         `;
     }
 
     panel.prepend(nueva);
-}
+ }
 
 
     function reportarUsuarioNexus() {
@@ -877,6 +884,13 @@
 
         conectarNotificacionesNexus();
     });
+
+function reproducirSonidoNotificacionNexus() {
+    const sonido = new Audio("/static/sounds/notificacion.mp3");
+    sonido.volume = 0.35;
+    sonido.play().catch(() => {});
+}
+
 </script>
     {% endif %}
 

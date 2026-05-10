@@ -3,50 +3,206 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
-    path('favorito-ajax/<int:anime_id>/', views.agregar_favorito_ajax, name='agregar_favorito_ajax'),
-    path('buscar-animes/', views.buscar_animes_ajax, name='buscar_animes_ajax'),
+
+    # ============================================================
+    # INICIO / CATÁLOGO
+    # ============================================================
+
     path('', views.inicio, name='inicio'),
     path('anime/<int:anime_id>/', views.detalle_anime, name='detalle_anime'),
+    path('emision/', views.emision, name='emision'),
+
+    # ============================================================
+    # REGISTRO / PERFIL
+    # ============================================================
+
     path('registro/', views.registro, name='registro'),
-    path('favorito/<int:anime_id>/', views.agregar_favorito, name='agregar_favorito'),
-    path('favoritos/', views.ver_favoritos, name='favoritos'),
-    path('favoritos/quitar/<int:anime_id>/', views.quitar_favorito, name='quitar_favorito'),
     path('perfil/', views.perfil, name='perfil'),
     path('perfil/editar/', views.editar_perfil, name='editar_perfil'),
-    path('favorito-quitar-ajax/<int:anime_id>/', views.quitar_favorito_ajax, name='quitar_favorito_ajax'),
-    path('like-resena/<int:resena_id>/', views.like_resena, name='like_resena'),
-    path('emision/', views.emision, name='emision'),
-    path('amistad/enviar/<int:usuario_id>/',views.enviar_solicitud_amistad,name='enviar_solicitud_amistad'),
-    path('usuarios/buscar/', views.buscar_usuarios, name='buscar_usuarios'),
-    path('amistades/', views.solicitudes_amistad, name='solicitudes_amistad'),
-    path('amistad/aceptar/<int:solicitud_id>/',views.aceptar_solicitud,name='aceptar_solicitud'),
-    path('amistad/rechazar/<int:solicitud_id>/',views.rechazar_solicitud,name='rechazar_solicitud'),
-    path('social/', views.centro_social, name='centro_social'),
-    path('chat/<int:usuario_id>/', views.chat_privado, name='chat_privado'),
-    path('mensajes/', views.bandeja_mensajes, name='bandeja_mensajes'),
-    path("chat/mensajes/<int:usuario_id>/", views.obtener_mensajes, name="obtener_mensajes"),
-    path("chat/enviar/<int:usuario_id>/", views.enviar_mensaje_ajax, name="enviar_mensaje_ajax"),
-    path("amistad/eliminar/<int:usuario_id>/", views.eliminar_amigo, name="eliminar_amigo"),
-    path("usuario/bloquear/<int:usuario_id>/", views.bloquear_usuario, name="bloquear_usuario"),
-    path("usuario/silenciar/<int:usuario_id>/", views.silenciar_usuario, name="silenciar_usuario"),
-    path("usuario/reportar/<int:usuario_id>/", views.reportar_usuario, name="reportar_usuario"),
-    path("reportar-bug/", views.reportar_bug, name="reportar_bug"),
-    path("admin-reportes/", views.panel_reportes, name="panel_reportes"),
-    path("perfil/<int:usuario_id>/", views.perfil_publico, name="perfil_publico"),
-    path("usuario/<int:usuario_id>/resenas/", views.usuario_resenas_ajax, name="usuario_resenas_ajax"),
-    path("usuario/<int:usuario_id>/resenas/", views.usuario_resenas_ajax, name="ver_resenas_usuario"),
-    path("usuario/<int:usuario_id>/resenas/", views.usuario_resenas_ajax, name="usuario_resenas_ajax"),
-    path("usuario/reportar/<int:usuario_id>/",views.reportar_usuario,name="reportar_usuario"),
-    path("admin-reportes/usuario/<int:reporte_id>/revisado/", views.marcar_reporte_usuario_revisado, name="marcar_reporte_usuario_revisado"),
-    path("admin-reportes/usuario/<int:usuario_id>/suspender/", views.suspender_usuario_reportado, name="suspender_usuario_reportado"),
-    path("admin-reportes/usuario/<int:reporte_id>/eliminar/", views.eliminar_reporte_usuario, name="eliminar_reporte_usuario"),
-    path("admin-reportes/usuario/<int:usuario_id>/strike/",views.dar_strike_usuario,name="dar_strike_usuario"),
-    path("notificaciones/marcar-leidas/",views.marcar_notificaciones_leidas,name="marcar_notificaciones_leidas"),
-    path("admin-reportes/usuario/<int:usuario_id>/quitar-strike/",views.quitar_strike_usuario,name="quitar_strike_usuario"),
-    path("admin-tools/actualizar-catalogo/", views.actualizar_catalogo_render, name="actualizar_catalogo_render"),
-    path("admin-tools/traducir-catalogo/", views.traducir_catalogo_render, name="traducir_catalogo_render"),
-    path("admin-tools/importar-catalogo/",views.importar_catalogo_render,name="importar_catalogo_render"),
+    path('perfil/<int:usuario_id>/', views.perfil_publico, name='perfil_publico'),
 
+    # ============================================================
+    # FAVORITOS
+    # ============================================================
+
+    path('favoritos/', views.ver_favoritos, name='favoritos'),
+
+    path('favorito/<int:anime_id>/',views.agregar_favorito,name='agregar_favorito'),
+
+    path('favoritos/quitar/<int:anime_id>/',views.quitar_favorito,name='quitar_favorito'),
+
+    path('favorito-ajax/<int:anime_id>/',views.agregar_favorito_ajax,name='agregar_favorito_ajax'),
+
+    path('favorito-quitar-ajax/<int:anime_id>/',views.quitar_favorito_ajax,name='quitar_favorito_ajax'),
+
+    # ============================================================
+    # RESEÑAS
+    # ============================================================
+
+    path('like-resena/<int:resena_id>/',views.like_resena,name='like_resena'),
+
+    path('responder-resena/<int:resena_id>/',views.responder_resena,name='responder_resena'),
+
+    path('reportar-spoiler/<int:resena_id>/',views.reportar_spoiler,name='reportar_spoiler'),
+
+    path('editar-resena/<int:resena_id>/',views.editar_resena,name='editar_resena'),
+
+    path('eliminar-resena/<int:resena_id>/',views.eliminar_resena,name='eliminar_resena'),
+
+    # ============================================================
+    # RESEÑAS AJAX
+    # ============================================================
+
+    path('usuario/<int:usuario_id>/resenas/',views.usuario_resenas_ajax,name='usuario_resenas_ajax'),
+
+    # ============================================================
+    # BÚSQUEDAS AJAX
+    # ============================================================
+
+    path('buscar-animes/',views.buscar_animes_ajax,name='buscar_animes_ajax'),
+
+    path('usuarios/buscar/',views.buscar_usuarios,name='buscar_usuarios'),
+
+    # ============================================================
+    # SISTEMA SOCIAL
+    # ============================================================
+
+    path('social/',views.centro_social,name='centro_social'),
+
+    path('amistades/',views.solicitudes_amistad,name='solicitudes_amistad'),
+
+    path('amistad/enviar/<int:usuario_id>/',views.enviar_solicitud_amistad,name='enviar_solicitud_amistad'),
+
+    path('amistad/aceptar/<int:solicitud_id>/',views.aceptar_solicitud,name='aceptar_solicitud'),
+
+    path('amistad/rechazar/<int:solicitud_id>/',views.rechazar_solicitud,name='rechazar_solicitud'),
+
+    path('amistad/eliminar/<int:usuario_id>/',views.eliminar_amigo,name='eliminar_amigo'),
+
+    # ============================================================
+    # CHAT
+    # ============================================================
+
+    path('chat/<int:usuario_id>/',views.chat_privado,name='chat_privado'),
+
+    path(
+        'mensajes/',
+        views.bandeja_mensajes,
+        name='bandeja_mensajes'
+    ),
+
+    path(
+        'chat/mensajes/<int:usuario_id>/',
+        views.obtener_mensajes,
+        name='obtener_mensajes'
+    ),
+
+    path(
+        'chat/enviar/<int:usuario_id>/',
+        views.enviar_mensaje_ajax,
+        name='enviar_mensaje_ajax'
+    ),
+
+    # ============================================================
+    # USUARIOS
+    # ============================================================
+
+    path(
+        'usuario/bloquear/<int:usuario_id>/',
+        views.bloquear_usuario,
+        name='bloquear_usuario'
+    ),
+
+    path(
+        'usuario/silenciar/<int:usuario_id>/',
+        views.silenciar_usuario,
+        name='silenciar_usuario'
+    ),
+
+    path(
+        'usuario/reportar/<int:usuario_id>/',
+        views.reportar_usuario,
+        name='reportar_usuario'
+    ),
+
+    # ============================================================
+    # REPORTES
+    # ============================================================
+
+    path(
+        'reportar-bug/',
+        views.reportar_bug,
+        name='reportar_bug'
+    ),
+
+    path(
+        'admin-reportes/',
+        views.panel_reportes,
+        name='panel_reportes'
+    ),
+
+    path(
+        'admin-reportes/usuario/<int:reporte_id>/revisado/',
+        views.marcar_reporte_usuario_revisado,
+        name='marcar_reporte_usuario_revisado'
+    ),
+
+    path(
+        'admin-reportes/usuario/<int:usuario_id>/suspender/',
+        views.suspender_usuario_reportado,
+        name='suspender_usuario_reportado'
+    ),
+
+    path(
+        'admin-reportes/usuario/<int:reporte_id>/eliminar/',
+        views.eliminar_reporte_usuario,
+        name='eliminar_reporte_usuario'
+    ),
+
+    path(
+        'admin-reportes/usuario/<int:usuario_id>/strike/',
+        views.dar_strike_usuario,
+        name='dar_strike_usuario'
+    ),
+
+    path(
+        'admin-reportes/usuario/<int:usuario_id>/quitar-strike/',
+        views.quitar_strike_usuario,
+        name='quitar_strike_usuario'
+    ),
+
+    # ============================================================
+    # NOTIFICACIONES
+    # ============================================================
+
+    path(
+        'notificaciones/marcar-leidas/',
+        views.marcar_notificaciones_leidas,
+        name='marcar_notificaciones_leidas'
+    ),
+
+    # ============================================================
+    # TOOLS RENDER
+    # ============================================================
+
+    path(
+        'admin-tools/actualizar-catalogo/',
+        views.actualizar_catalogo_render,
+        name='actualizar_catalogo_render'
+    ),
+
+    path(
+        'admin-tools/traducir-catalogo/',
+        views.traducir_catalogo_render,
+        name='traducir_catalogo_render'
+    ),
+
+    path(
+        'admin-tools/importar-catalogo/',
+        views.importar_catalogo_render,
+        name='importar_catalogo_render'
+    ),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

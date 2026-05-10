@@ -13,7 +13,21 @@ from asgiref.sync import async_to_sync
 from .models import Notificacion
 
 from .forms import PerfilUsuarioForm, ResenaForm
-from .models import (Amistad,UsuarioSilenciado,Anime, Favorito,LikeResena,MensajePrivado,PerfilUsuario,Reporte,Resena,ReporteUsuario,StrikeUsuario,Notificacion,)
+from .models import (
+    Amistad,
+    UsuarioSilenciado,
+    Anime,
+    Favorito,
+    LikeResena,
+    MensajePrivado,
+    PerfilUsuario,
+    Reporte,
+    Resena,
+    RespuestaResena,
+    ReporteUsuario,
+    StrikeUsuario,
+    Notificacion,
+)
 import os
 
 # ============================================================
@@ -23,6 +37,38 @@ import os
 DEFAULT_PROFILE_IMAGE = "/static/img/default-profile.png"
 DEFAULT_PROFILE_BANNER = "/static/img/default-banner.jpg"
 
+def sumar_xp(usuario, cantidad):
+    perfil, creado = PerfilUsuario.objects.get_or_create(usuario=usuario)
+
+    nivel_anterior = perfil.nivel
+
+    perfil.experiencia += cantidad
+    perfil.nivel = perfil.experiencia // 100 + 1
+    perfil.save()
+
+    subio_nivel = perfil.nivel > nivel_anterior
+
+    if subio_nivel:
+        mensaje_notificacion = f"⬆ ¡Subiste al nivel {perfil.nivel}!"
+
+        Notificacion.objects.create(
+            usuario=usuario,
+            tipo="nivel",
+            mensaje=mensaje_notificacion,
+        )
+
+        enviar_notificacion_nexus(
+            usuario,
+            mensaje_notificacion,
+            "nivel"
+        )
+
+    return {
+        "perfil": perfil,
+        "xp_ganada": cantidad,
+        "nivel": perfil.nivel,
+        "subio_nivel": subio_nivel,
+    }
 
 def obtener_imagenes_perfil(usuario):
     """
@@ -147,26 +193,53 @@ def convertir_emojis(texto):
 
 def detalle_anime(request, anime_id):
     anime = get_object_or_404(Anime, id=anime_id)
-    resenas = anime.resenas.all().order_by("-fecha")
-
-    for resena in resenas:
-        resena.texto = convertir_emojis(resena.texto)
 
     if request.method == "POST" and request.user.is_authenticated:
         form = ResenaForm(request.POST)
 
         if form.is_valid():
-            Resena.objects.update_or_create(
+            resena, creada = Resena.objects.update_or_create(
                 usuario=request.user,
                 anime=anime,
                 defaults={
                     "texto": convertir_emojis(form.cleaned_data["texto"]),
+                    "puntuacion": form.cleaned_data["puntuacion"],
+                    "contiene_spoiler": request.POST.get("contiene_spoiler") == "on",
                 },
             )
+            xp_data = None
+
+            if creada:
+                xp_data = sumar_xp(request.user, 50)
+                
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({
+                    "ok": True,
+                    "resena": {
+                    "id": resena.id,
+                    "usuario": resena.usuario.username,
+                    "texto": resena.texto,
+                    "puntuacion": resena.puntuacion,
+                    "fecha": resena.fecha.strftime("%d/%m/%Y %H:%M"),
+                    "contiene_spoiler": resena.contiene_spoiler,
+                    "likes": resena.likes.count(),
+              },
+               "xp": {
+                   "ganada": xp_data["xp_ganada"] if xp_data else 0,
+                   "nivel": xp_data["nivel"] if xp_data else None,
+                   "subio_nivel": xp_data["subio_nivel"] if xp_data else False,
+               },
+            })
 
             return redirect("detalle_anime", anime_id=anime.id)
+
     else:
         form = ResenaForm()
+
+    resenas = anime.resenas.all().order_by("-fecha")
+
+    for resena in resenas:
+        resena.texto = convertir_emojis(resena.texto)
 
     es_favorito = False
 
@@ -186,8 +259,6 @@ def detalle_anime(request, anime_id):
             "es_favorito": es_favorito,
         },
     )
-
-
 @login_required
 @require_POST
 def like_resena(request, resena_id):
@@ -198,20 +269,176 @@ def like_resena(request, resena_id):
         resena=resena,
     )
 
+    xp_data = None
+
     if created:
         liked = True
+
+        if resena.usuario != request.user:
+            xp_data = sumar_xp(resena.usuario, 5)
+
+            mensaje_notificacion = (
+                f"❤️ {request.user.username} le dio like a tu reseña de {resena.anime.titulo}. +5 XP"
+            )
+
+            Notificacion.objects.create(
+                usuario=resena.usuario,
+                tipo="like",
+                mensaje=mensaje_notificacion,
+            )
+
+            enviar_notificacion_nexus(
+                resena.usuario,
+                mensaje_notificacion,
+                "like"
+            )
+
     else:
         like.delete()
         liked = False
 
-    return JsonResponse(
-        {
-            "ok": True,
-            "liked": liked,
-            "total_likes": resena.likes.count(),
-        }
+    return JsonResponse({
+        "ok": True,
+        "liked": liked,
+        "total_likes": resena.likes.count(),
+        "xp": {
+            "ganada": xp_data["xp_ganada"] if xp_data else 0,
+            "nivel": xp_data["nivel"] if xp_data else None,
+            "subio_nivel": xp_data["subio_nivel"] if xp_data else False,
+        },
+    })
+
+@login_required
+@require_POST
+def responder_resena(request, resena_id):
+    resena = get_object_or_404(Resena, id=resena_id)
+    texto = request.POST.get("texto", "").strip()
+
+    if not texto:
+        return JsonResponse({
+            "ok": False,
+            "error": "La respuesta está vacía."
+        })
+
+    ya_respondio = RespuestaResena.objects.filter(
+        usuario=request.user,
+        resena=resena
+    ).exists()
+
+    respuesta = RespuestaResena.objects.create(
+        usuario=request.user,
+        resena=resena,
+        texto=texto
     )
 
+    xp_data = None
+
+    if not ya_respondio:
+        xp_data = sumar_xp(request.user, 15)
+
+    if resena.usuario != request.user:
+        mensaje_notificacion = (
+            f"💬 {request.user.username} respondió tu reseña de {resena.anime.titulo}."
+        )
+
+        Notificacion.objects.create(
+            usuario=resena.usuario,
+            tipo="respuesta",
+            mensaje=mensaje_notificacion,
+        )
+
+        enviar_notificacion_nexus(
+            resena.usuario,
+            mensaje_notificacion,
+            "respuesta"
+        )
+
+    return JsonResponse({
+        "ok": True,
+        "respuesta": {
+            "usuario": respuesta.usuario.username,
+            "texto": respuesta.texto,
+            "fecha": respuesta.fecha.strftime("%d/%m/%Y %H:%M"),
+        },
+        "xp": {
+            "ganada": xp_data["xp_ganada"] if xp_data else 0,
+            "nivel": xp_data["nivel"] if xp_data else None,
+            "subio_nivel": xp_data["subio_nivel"] if xp_data else False,
+        },
+    })
+
+@login_required
+@require_POST
+def editar_resena(request, resena_id):
+    resena = get_object_or_404(
+        Resena,
+        id=resena_id,
+        usuario=request.user
+    )
+
+    texto = request.POST.get("texto", "").strip()
+    puntuacion = request.POST.get("puntuacion")
+
+    if not texto:
+        return JsonResponse({
+            "ok": False,
+            "error": "La reseña no puede estar vacía."
+        })
+
+    resena.texto = convertir_emojis(texto)
+
+    if puntuacion:
+        resena.puntuacion = int(puntuacion)
+
+    resena.contiene_spoiler = request.POST.get("contiene_spoiler") == "true"
+    resena.save()
+
+    return JsonResponse({
+        "ok": True,
+        "resena": {
+            "id": resena.id,
+            "texto": resena.texto,
+            "puntuacion": resena.puntuacion,
+            "contiene_spoiler": resena.contiene_spoiler,
+        }
+    })
+
+
+@login_required
+@require_POST
+def eliminar_resena(request, resena_id):
+    resena = get_object_or_404(
+        Resena,
+        id=resena_id,
+        usuario=request.user
+    )
+
+    resena.delete()
+
+    return JsonResponse({
+        "ok": True,
+        "mensaje": "Reseña eliminada correctamente."
+    })
+
+@login_required
+@require_POST
+def reportar_spoiler(request, resena_id):
+
+    resena = get_object_or_404(Resena, id=resena_id)
+
+    resena.spoiler_reportes += 1
+
+    # Auto spoiler si llega a 2 reportes
+    if resena.spoiler_reportes >= 2:
+        resena.contiene_spoiler = True
+
+    resena.save()
+
+    return JsonResponse({
+        "ok": True,
+        "reportes": resena.spoiler_reportes,
+        "spoiler": resena.contiene_spoiler,
+    })
 
 # ============================================================
 # RESEÑAS DEL USUARIO - AJAX PARA MENÚ NEXUS :D
@@ -1135,3 +1362,4 @@ def importar_catalogo_render(request):
             "ok": False,
             "error": str(e)
         }, status=500)    
+        

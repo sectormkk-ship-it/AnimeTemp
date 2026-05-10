@@ -41,10 +41,12 @@ class ResenaForm(forms.ModelForm):
         widgets = {
             'texto': forms.Textarea(attrs={
                 'rows': 4,
-                'placeholder': 'Escribe tu reseña...'
+                'placeholder': 'Escribe tu reseña.',
             }),
-            'puntuacion': forms.NumberInput(attrs={
-                'min': 1,
-                'max': 10
-            }),
+            'puntuacion': forms.Select(
+                choices=[(i, f'{i}/10') for i in range(1, 11)],
+                attrs={
+                    'class': 'rating-select',
+                }
+            ),
         }

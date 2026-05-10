@@ -10,13 +10,13 @@ class PerfilUsuario(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
 
     foto_perfil = models.ImageField(
-        upload_to='perfiles/fotos/',
+        upload_to="perfiles/fotos/",
         blank=True,
         null=True
     )
 
     fondo_perfil = models.ImageField(
-        upload_to='perfiles/fondos/',
+        upload_to="perfiles/fondos/",
         blank=True,
         null=True
     )
@@ -40,6 +40,9 @@ class PerfilUsuario(models.Model):
         blank=True,
         null=True
     )
+
+    experiencia = models.IntegerField(default=0)
+    nivel = models.IntegerField(default=1)
 
     def __str__(self):
         return self.usuario.username
@@ -100,6 +103,7 @@ class Anime(models.Model):
     def __str__(self):
         return self.titulo
 
+
 # ============================================================
 # RESEÑAS DE ANIME
 # ============================================================
@@ -118,6 +122,8 @@ class Resena(models.Model):
 
     texto = models.TextField()
     puntuacion = models.IntegerField(default=5)
+    contiene_spoiler = models.BooleanField(default=False)
+    spoiler_reportes = models.IntegerField(default=0)
     fecha = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -149,6 +155,28 @@ class LikeResena(models.Model):
         return f"{self.usuario.username} dio like a reseña {self.resena.id}"
 
 
+class RespuestaResena(models.Model):
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    resena = models.ForeignKey(
+        Resena,
+        on_delete=models.CASCADE,
+        related_name="respuestas"
+    )
+
+    texto = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["fecha"]
+
+    def __str__(self):
+        return f"{self.usuario.username} respondió reseña {self.resena.id}"
+
+
 # ============================================================
 # FAVORITOS
 # ============================================================
@@ -165,7 +193,7 @@ class Favorito(models.Model):
     )
 
     class Meta:
-        unique_together = ('usuario', 'anime')
+        unique_together = ("usuario", "anime")
 
     def __str__(self):
         return f"{self.usuario.username} - {self.anime.titulo}"
@@ -218,6 +246,10 @@ class Notificacion(models.Model):
         ("amistad", "Solicitud de amistad"),
         ("strike", "Strike"),
         ("sistema", "Sistema"),
+        ("like", "Like"),
+        ("respuesta", "Respuesta"),
+        ("nivel", "Subida de nivel"),
+        ("logro", "Logro"),
     )
 
     usuario = models.ForeignKey(
@@ -226,7 +258,12 @@ class Notificacion(models.Model):
         related_name="notificaciones"
     )
 
-    tipo = models.CharField(max_length=20, choices=TIPOS)
+    tipo = models.CharField(
+        max_length=20,
+        choices=TIPOS,
+        default="sistema"
+    )
+
     mensaje = models.CharField(max_length=255)
 
     solicitud = models.ForeignKey(
@@ -255,13 +292,13 @@ class MensajePrivado(models.Model):
     remitente = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='mensajes_enviados'
+        related_name="mensajes_enviados"
     )
 
     destinatario = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='mensajes_recibidos'
+        related_name="mensajes_recibidos"
     )
 
     mensaje = models.TextField()
@@ -269,7 +306,7 @@ class MensajePrivado(models.Model):
     leido = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['fecha']
+        ordering = ["fecha"]
 
     def __str__(self):
         return f"{self.remitente} -> {self.destinatario}"
@@ -296,6 +333,9 @@ class UsuarioSilenciado(models.Model):
 
     class Meta:
         unique_together = ("usuario", "usuario_silenciado")
+
+    def __str__(self):
+        return f"{self.usuario.username} silenció a {self.usuario_silenciado.username}"
 
 
 # ============================================================
