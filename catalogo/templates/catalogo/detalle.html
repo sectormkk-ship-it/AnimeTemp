@@ -143,9 +143,9 @@
                          onclick="abrirResenasDesdeResena('{{ resena.usuario.id }}')"
                          oncontextmenu="mostrarMenuNexus(event, '{{ resena.usuario.id }}', '{{ resena.usuario.username|escapejs }}')">
 
-                        <img src="{% if resena.usuario.perfilusuario.foto_perfil %}{{ resena.usuario.perfilusuario.foto_perfil }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
-                             alt="{{ resena.usuario.username }}"
-                             class="resena-user-avatar">
+                        <img src="{% if resena.usuario.perfilusuario.foto_perfil %}{{ resena.usuario.perfilusuario.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
+                        alt="{{ resena.usuario.username }}"
+                        onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
 
                         <span class="resena-usuario">
                             {{ resena.usuario.username }}
