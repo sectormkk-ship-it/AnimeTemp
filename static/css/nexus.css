@@ -7,6 +7,22 @@
         border-radius: 22px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
     }
+    
+
+    .review-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    }
+
+    .review-user img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #38bdf8;
+    flex-shrink: 0;
+    }
 
     .registro-title {
         text-align: center;
