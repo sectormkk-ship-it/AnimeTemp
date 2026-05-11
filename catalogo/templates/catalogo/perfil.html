@@ -9,7 +9,7 @@
     <div class="perfil-privado-content">
 
         <img class="perfil-privado-avatar"
-             src="{% if perfil_usuario.foto_perfil %}{{ perfil_usuario.foto_perfil }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
+             src="{% if perfil_usuario.foto_perfil %}{{ perfil_usuario.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
              alt="Foto de perfil">
 
         <h1>{{ user.username }}</h1>
