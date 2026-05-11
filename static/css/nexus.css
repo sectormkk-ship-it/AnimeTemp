@@ -3348,6 +3348,32 @@ body {
     }
 }
 
+.resena-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.resena-usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.resena-usuario img,
+.resena-avatar,
+.avatar-resena {
+    width: 55px !important;
+    height: 55px !important;
+    min-width: 55px !important;
+    max-width: 55px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 2px solid #38bdf8;
+    flex-shrink: 0;
+}
+
 /* =========================================================
    NEXUS NOTIFICACIONES POR TIPO
 ========================================================= */
