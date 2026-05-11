@@ -4,7 +4,9 @@
 
 <div class="perfil-privado-wrapper">
 
-    <div class="perfil-privado-banner"></div>
+    <div class="perfil-privado-banner"
+     style="background-image: url('{% if perfil_usuario.fondo_perfil %}{{ perfil_usuario.fondo_perfil.url }}{% else %}https://images.unsplash.com/photo-1528164344705-47542687000d{% endif %}');">
+    </div>
 
     <div class="perfil-privado-content">
 
