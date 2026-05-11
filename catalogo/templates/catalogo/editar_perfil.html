@@ -14,7 +14,7 @@
 
             <label class="avatar-label">
                 <img class="avatar-preview"
-                     src="{% if form.instance.foto_perfil %}{{ form.instance.foto_perfil }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
+                     src="{% if form.instance.foto_perfil %}{{ form.instance.foto_perfil.url }}{% else %}https://cdn-icons-png.flaticon.com/512/149/149071.png{% endif %}"
                      alt="Foto de perfil">
 
                 <span class="plus-badge">+</span>
@@ -35,7 +35,7 @@
 
             <label class="banner-label">
                 <img class="banner-preview"
-                     src="{% if form.instance.fondo_perfil %}{{ form.instance.fondo_perfil }}{% else %}https://images.unsplash.com/photo-1578632767115-351597cf2477{% endif %}"
+                     src="{% if form.instance.fondo_perfil %}{{ form.instance.fondo_perfil.url }}{% else %}https://images.unsplash.com/photo-1578632767115-351597cf2477{% endif %}"
                      alt="Fondo de perfil">
 
                 <div class="banner-overlay">Cambiar fondo</div>

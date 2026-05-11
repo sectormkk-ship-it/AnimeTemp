@@ -71,21 +71,20 @@ def sumar_xp(usuario, cantidad):
     }
 
 def obtener_imagenes_perfil(usuario):
-    """
-    Devuelve la foto y el banner del perfil de un usuario.
-    Si no tiene foto o banner personalizados, usa imágenes por defecto.
-    """
+    DEFAULT_FOTO = "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+    DEFAULT_BANNER = "https://images.unsplash.com/photo-1528164344705-47542687000d"
 
-    perfil_usuario, creado = PerfilUsuario.objects.get_or_create(usuario=usuario)
+    perfil = getattr(usuario, "perfilusuario", None)
 
-    foto_perfil = DEFAULT_PROFILE_IMAGE
-    banner_perfil = DEFAULT_PROFILE_BANNER
+    foto_perfil = DEFAULT_FOTO
+    banner_perfil = DEFAULT_BANNER
 
-    if perfil_usuario.foto_perfil:
-        foto_perfil = perfil_usuario.foto_perfil.url
+    if perfil:
+        if perfil.foto_perfil:
+            foto_perfil = perfil.foto_perfil.url
 
-    if perfil_usuario.fondo_perfil:
-        banner_perfil = perfil_usuario.fondo_perfil.url
+        if perfil.fondo_perfil:
+            banner_perfil = perfil.fondo_perfil.url
 
     return foto_perfil, banner_perfil
 
