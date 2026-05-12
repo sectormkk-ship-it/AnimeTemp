@@ -783,12 +783,10 @@ function abrirResenasNexus() {
                             <h3>Menu Social</h3>
 
                             <div class="nexus-menu-group">
-                                <button type="button"
-                                        class="nexus-menu-toggle"
-                                        onclick="toggleNexusMenu(this)">
+                                <button type="button" class="nexus-menu-toggle">
                                     <span>📝 Reseñas</span>
                                     <span class="nexus-menu-arrow">▼</span>
-                                </button>
+                                    </button>
 
                                 <div class="nexus-menu-content open">
                                     <button type="button" class="nexus-filter-btn active">Todas</button>
@@ -799,12 +797,10 @@ function abrirResenasNexus() {
                             </div>
 
                             <div class="nexus-menu-group">
-                                <button type="button"
-                                        class="nexus-menu-toggle"
-                                        onclick="toggleNexusMenu(this)">
-                                    <span>📺 Anime</span>
-                                    <span class="nexus-menu-arrow">▼</span>
-                                </button>
+                                  <button type="button" class="nexus-menu-toggle">
+                                  <span>📺 Anime</span>
+                                  <span class="nexus-menu-arrow">▼</span>
+                                  </button>
 
                                 <div class="nexus-menu-content open">
                                     <button type="button" class="nexus-filter-btn">Mi seguimiento</button>
@@ -1015,6 +1011,66 @@ function toggleNexusMenu(button) {
     } else {
         arrow.textContent = "▶";
     }
+}
+
+function prepararMenuSocialSeguimiento() {
+    const filtros = document.querySelectorAll(".nexus-filter-btn");
+    const toggles = document.querySelectorAll(".nexus-menu-toggle");
+
+    const panelSeguimiento = document.getElementById("nexus-seguimiento-panel");
+    const panelGuardados = document.getElementById("nexus-seguimientos-guardados-panel");
+    const listaResenas = document.getElementById("nexus-lista-resenas");
+
+    // =========================
+    // DESPLEGABLES DEL MENÚ
+    // =========================
+    toggles.forEach(toggle => {
+        toggle.addEventListener("click", function () {
+            const grupo = this.closest(".nexus-menu-group");
+            const contenido = grupo.querySelector(".nexus-menu-content");
+            const flecha = this.querySelector(".nexus-menu-arrow");
+
+            if (!contenido || !flecha) return;
+
+            contenido.classList.toggle("open");
+
+            if (contenido.classList.contains("open")) {
+                flecha.textContent = "▼";
+            } else {
+                flecha.textContent = "▶";
+            }
+        });
+    });
+
+    // =========================
+    // BOTONES INTERNOS
+    // =========================
+    filtros.forEach(boton => {
+        boton.addEventListener("click", function () {
+            filtros.forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+            const texto = this.textContent.trim();
+
+            if (texto === "Mi seguimiento") {
+                if (panelSeguimiento) panelSeguimiento.style.display = "block";
+                if (panelGuardados) panelGuardados.style.display = "none";
+                if (listaResenas) listaResenas.style.display = "none";
+                return;
+            }
+
+            if (texto === "Seguimientos guardados") {
+                if (panelSeguimiento) panelSeguimiento.style.display = "none";
+                if (panelGuardados) panelGuardados.style.display = "block";
+                if (listaResenas) listaResenas.style.display = "none";
+                return;
+            }
+
+            if (panelSeguimiento) panelSeguimiento.style.display = "none";
+            if (panelGuardados) panelGuardados.style.display = "none";
+            if (listaResenas) listaResenas.style.display = "block";
+        });
+    });
 }
 
 </script>

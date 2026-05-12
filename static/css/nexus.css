@@ -3717,3 +3717,62 @@ body {
     }
 
 }
+/* =========================
+   NEXUS MENU DESPLEGABLE FIX
+========================= */
+
+.nexus-reviews-sidebar {
+    overflow-y: auto;
+}
+
+.nexus-menu-group {
+    margin-top: 16px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.72);
+    border: 1px solid rgba(56, 189, 248, 0.12);
+    overflow: hidden;
+}
+
+.nexus-menu-toggle {
+    width: 100%;
+    padding: 15px 16px;
+    background: rgba(2, 6, 23, 0.55);
+    border: none;
+    color: #e2e8f0;
+    font-weight: 900;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+}
+
+.nexus-menu-toggle:hover {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+}
+
+.nexus-menu-arrow {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.nexus-menu-content {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+}
+
+.nexus-menu-content.open {
+    display: flex;
+}
+
+.nexus-menu-content .nexus-filter-btn {
+    width: 100%;
+    margin: 0;
+    text-align: left;
+    border-radius: 13px;
+}
