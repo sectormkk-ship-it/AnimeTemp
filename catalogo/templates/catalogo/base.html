@@ -778,15 +778,40 @@ function abrirResenasNexus() {
             let html = `
                 <div class="nexus-reviews-modal">
                     <div class="nexus-reviews-box">
+
                         <aside class="nexus-reviews-sidebar">
                             <h3>Menu Social</h3>
-                            <button type="button" class="nexus-filter-btn active">Todas</button>
-                            <button type="button" class="nexus-filter-btn">Mejores</button>
-                            <button type="button" class="nexus-filter-btn">Recientes</button>
-                            <button type="button" class="nexus-filter-btn">Sugerido</button>
-                            <button type="button" class="nexus-filter-btn">Mi seguimiento</button>
-                            <button type="button" class="nexus-filter-btn">Seguimientos guardados</button>
-                            <button type="button" class="nexus-filter-btn">Peores</button>
+
+                            <div class="nexus-menu-group">
+                                <button type="button"
+                                        class="nexus-menu-toggle"
+                                        onclick="toggleNexusMenu(this)">
+                                    <span>📝 Reseñas</span>
+                                    <span class="nexus-menu-arrow">▼</span>
+                                </button>
+
+                                <div class="nexus-menu-content open">
+                                    <button type="button" class="nexus-filter-btn active">Todas</button>
+                                    <button type="button" class="nexus-filter-btn">Mejores</button>
+                                    <button type="button" class="nexus-filter-btn">Recientes</button>
+                                    <button type="button" class="nexus-filter-btn">Peores</button>
+                                </div>
+                            </div>
+
+                            <div class="nexus-menu-group">
+                                <button type="button"
+                                        class="nexus-menu-toggle"
+                                        onclick="toggleNexusMenu(this)">
+                                    <span>📺 Anime</span>
+                                    <span class="nexus-menu-arrow">▼</span>
+                                </button>
+
+                                <div class="nexus-menu-content open">
+                                    <button type="button" class="nexus-filter-btn">Mi seguimiento</button>
+                                    <button type="button" class="nexus-filter-btn">Seguimientos guardados</button>
+                                    <button type="button" class="nexus-filter-btn">Sugerido</button>
+                                </div>
+                            </div>
                         </aside>
 
                         <section class="nexus-reviews-main">
@@ -962,6 +987,34 @@ function reproducirSonidoNotificacionNexus() {
     const sonido = new Audio("/static/sounds/notificacion.mp3");
     sonido.volume = 0.35;
     sonido.play().catch(() => {});
+}
+
+function toggleNexusMenu(button) {
+    const group = button.parentElement;
+    const content = group.querySelector(".nexus-menu-content");
+    const arrow = button.querySelector(".nexus-menu-arrow");
+
+    if (!content || !arrow) return;
+
+    content.classList.toggle("open");
+    arrow.textContent = content.classList.contains("open") ? "▼" : "▶";
+}
+
+
+function toggleNexusMenu(button) {
+    const group = button.parentElement;
+    const content = group.querySelector(".nexus-menu-content");
+    const arrow = button.querySelector(".nexus-menu-arrow");
+
+    if (!content || !arrow) return;
+
+    content.classList.toggle("open");
+
+    if (content.classList.contains("open")) {
+        arrow.textContent = "▼";
+    } else {
+        arrow.textContent = "▶";
+    }
 }
 
 </script>

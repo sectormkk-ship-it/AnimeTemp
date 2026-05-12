@@ -3436,153 +3436,284 @@ body {
     box-shadow: 0 12px 30px rgba(239, 68, 68, 0.28);
 }
 
-/* =========================
-   SEGUIMIENTO ANIME
-========================= */
-
-.seguimiento-box {
-    margin-top: 25px;
-    background: linear-gradient(
-        180deg,
-        rgba(15,23,42,0.96),
-        rgba(2,6,23,0.98)
-    );
-    border: 1px solid rgba(56, 189, 248, 0.22);
-    border-radius: 18px;
-    padding: 22px;
-    box-shadow:
-        0 0 25px rgba(56,189,248,0.08),
-        inset 0 0 12px rgba(255,255,255,0.02);
-}
-
-.seguimiento-box h3 {
-    margin-top: 0;
-    margin-bottom: 18px;
-    color: #38bdf8;
-    font-size: 1.1rem;
-}
-
-.seguimiento-box form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.seguimiento-box label {
-    color: #cbd5e1;
-    font-weight: 700;
-    font-size: 0.95rem;
-}
-
-.seguimiento-box select,
-.seguimiento-box input {
-    background: rgba(15,23,42,0.95);
-    color: white;
-    border: 1px solid rgba(56,189,248,0.25);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 0.95rem;
-    outline: none;
-    transition: 0.25s;
-}
-
-.seguimiento-box select:focus,
-.seguimiento-box input:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 12px rgba(56,189,248,0.22);
-}
-
-.seguimiento-box button {
-    margin-top: 6px;
-    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-    color: #020617;
-    border: none;
-    border-radius: 14px;
-    padding: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: 0.25s;
-}
-
-.seguimiento-box button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(56,189,248,0.25);
-}
-
-.seguimiento-box p {
-    margin-top: 18px;
-    color: #cbd5e1;
-    font-size: 0.95rem;
-}
-
-.seguimiento-box strong {
-    color: #38bdf8;
-}
-
-/* =========================
-   NEXUS SEGUIMIENTO
-========================= */
+/* =====================================================
+   NEXUS SEGUIMIENTO SYSTEM
+===================================================== */
 
 .nexus-seguimiento-box,
 .nexus-seguimientos-guardados {
-    margin: 24px;
-    padding: 24px;
-    border-radius: 22px;
+    position: relative;
+    margin: 26px;
+    padding: 28px;
+    border-radius: 26px;
+
     background:
         linear-gradient(
             180deg,
-            rgba(8,15,35,0.98),
-            rgba(2,6,23,0.98)
+            rgba(6,12,28,0.98),
+            rgba(2,6,23,0.99)
         );
 
-    border: 1px solid rgba(56,189,248,0.16);
+    border: 1px solid rgba(56,189,248,0.14);
 
     box-shadow:
-        0 0 30px rgba(56,189,248,0.06);
+        0 0 45px rgba(56,189,248,0.06),
+        inset 0 0 18px rgba(255,255,255,0.02);
+
+    overflow: hidden;
+}
+
+/* Glow decorativo */
+
+.nexus-seguimiento-box::before,
+.nexus-seguimientos-guardados::before {
+    content: "";
+
+    position: absolute;
+    top: -120px;
+    right: -120px;
+
+    width: 260px;
+    height: 260px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(56,189,248,0.12),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+/* =====================================================
+   TITULOS
+===================================================== */
+
+.nexus-seguimiento-header {
+    margin-bottom: 22px;
 }
 
 .nexus-seguimiento-header h2,
 .nexus-seguimientos-guardados h2 {
+    margin: 0 0 10px;
+
     color: #38bdf8;
-    margin-top: 0;
-    margin-bottom: 20px;
+
+    font-size: 2rem;
+    font-weight: 900;
+
+    letter-spacing: -0.5px;
 }
+
+.nexus-seguimiento-header p {
+    margin: 0;
+
+    color: #94a3b8;
+
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* =====================================================
+   FORM
+===================================================== */
 
 .nexus-seguimiento-form {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 18px;
 }
 
 .nexus-seguimiento-form label {
-    color: white;
-    font-weight: 700;
+    color: #f8fafc;
+    font-weight: 800;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
 }
+
+/* =====================================================
+   INPUTS
+===================================================== */
 
 .nexus-seguimiento-form input,
 .nexus-seguimiento-form select,
 .nexus-seguimiento-form textarea {
     width: 100%;
-    background: rgba(15,23,42,0.95);
-    border: 1px solid rgba(56,189,248,0.18);
-    border-radius: 14px;
-    padding: 14px;
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15,23,42,0.96),
+            rgba(2,6,23,0.98)
+        );
+
+    border: 1px solid rgba(56,189,248,0.16);
+
+    border-radius: 16px;
+
+    padding: 15px 16px;
+
     color: white;
+
+    font-size: 0.96rem;
+
     outline: none;
+
+    transition:
+        border 0.25s,
+        box-shadow 0.25s,
+        transform 0.18s;
 }
+
+/* Focus */
+
+.nexus-seguimiento-form input:focus,
+.nexus-seguimiento-form select:focus,
+.nexus-seguimiento-form textarea:focus {
+    border-color: rgba(56,189,248,0.7);
+
+    box-shadow:
+        0 0 18px rgba(56,189,248,0.18);
+
+    transform: translateY(-1px);
+}
+
+/* Placeholder */
+
+.nexus-seguimiento-form input::placeholder,
+.nexus-seguimiento-form textarea::placeholder {
+    color: #64748b;
+}
+
+/* =====================================================
+   TEXTAREA
+===================================================== */
 
 .nexus-seguimiento-form textarea {
-    min-height: 110px;
+    min-height: 120px;
     resize: vertical;
+    line-height: 1.6;
 }
 
+/* =====================================================
+   BOTON
+===================================================== */
+
 #guardar-seguimiento-btn {
-    margin-top: 8px;
-    background: linear-gradient(135deg,#38bdf8,#0ea5e9);
+    margin-top: 6px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #38bdf8,
+            #0ea5e9
+        );
+
     color: #020617;
+
     border: none;
-    border-radius: 14px;
-    padding: 14px;
-    font-weight: 800;
+
+    border-radius: 18px;
+
+    padding: 16px;
+
+    font-weight: 900;
+    font-size: 1rem;
+
     cursor: pointer;
+
+    transition:
+        transform 0.22s,
+        box-shadow 0.25s,
+        opacity 0.2s;
+}
+
+/* Hover */
+
+#guardar-seguimiento-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 24px rgba(56,189,248,0.28);
+}
+
+/* Click */
+
+#guardar-seguimiento-btn:active {
+    transform: scale(0.98);
+}
+
+/* =====================================================
+   RESULTADOS ANIME
+===================================================== */
+
+#seguimiento-anime-resultados {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* =====================================================
+   LISTA GUARDADOS
+===================================================== */
+
+#lista-seguimientos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Card futura */
+
+.nexus-seguimiento-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 16px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(15,23,42,0.96),
+            rgba(2,6,23,0.98)
+        );
+
+    border: 1px solid rgba(56,189,248,0.1);
+
+    transition:
+        transform 0.2s,
+        border 0.2s;
+}
+
+.nexus-seguimiento-card:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(56,189,248,0.35);
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .nexus-seguimiento-box,
+    .nexus-seguimientos-guardados {
+        margin: 14px;
+        padding: 20px;
+    }
+
+    .nexus-seguimiento-header h2,
+    .nexus-seguimientos-guardados h2 {
+        font-size: 1.5rem;
+    }
+
 }
