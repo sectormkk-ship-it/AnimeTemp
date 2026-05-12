@@ -43,9 +43,45 @@
                         </button>
                     </a>
                 {% endif %}
+
+                <div class="seguimiento-box">
+                    <h3>📺 Mi seguimiento</h3>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="guardar_seguimiento" value="1">
+
+                        <label>Estado</label>
+                        <select name="estado">
+                            <option value="planeo_verlo" {% if seguimiento.estado == "planeo_verlo" %}selected{% endif %}>Planeo verlo</option>
+                            <option value="viendo" {% if seguimiento.estado == "viendo" %}selected{% endif %}>Viendo</option>
+                            <option value="completado" {% if seguimiento.estado == "completado" %}selected{% endif %}>Completado</option>
+                            <option value="pausado" {% if seguimiento.estado == "pausado" %}selected{% endif %}>Pausado</option>
+                            <option value="abandonado" {% if seguimiento.estado == "abandonado" %}selected{% endif %}>Abandonado</option>
+                        </select>
+
+                        <label>Capítulos vistos</label>
+                        <input type="number"
+                               name="capitulos_vistos"
+                               min="0"
+                               value="{{ seguimiento.capitulos_vistos }}">
+
+                        <button type="submit">Guardar progreso</button>
+                    </form>
+
+                    <p>
+                        Progreso actual:
+                        <strong>{{ seguimiento.capitulos_vistos }}</strong>
+                        {% if anime.episodios %}
+                            / {{ anime.episodios }}
+                        {% endif %}
+                    </p>
+                </div>
+
             {% else %}
                 <p class="login-msg">
-                    <a href="{% url 'login' %}">Iniciá sesión para guardar favoritos</a>
+                    <a href="{% url 'login' %}">Iniciá sesión para guardar favoritos y seguimiento</a>
                 </p>
             {% endif %}
         </div>

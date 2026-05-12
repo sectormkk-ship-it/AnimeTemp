@@ -27,6 +27,7 @@ from .models import (
     ReporteUsuario,
     StrikeUsuario,
     Notificacion,
+    SeguimientoAnime,
 )
 import os
 
@@ -193,7 +194,55 @@ def convertir_emojis(texto):
 def detalle_anime(request, anime_id):
     anime = get_object_or_404(Anime, id=anime_id)
 
-    if request.method == "POST" and request.user.is_authenticated:
+    seguimiento = None
+
+    if request.user.is_authenticated:
+        seguimiento, creado_seguimiento = SeguimientoAnime.objects.get_or_create(
+            usuario=request.user,
+            anime=anime,
+            defaults={
+                "estado": "planeo_verlo",
+                "capitulos_vistos": 0,
+            },
+        )
+
+    # =========================
+    # GUARDAR SEGUIMIENTO
+    # =========================
+    if (
+        request.method == "POST"
+        and request.user.is_authenticated
+        and "guardar_seguimiento" in request.POST
+    ):
+        estado = request.POST.get("estado")
+        capitulos_vistos = request.POST.get("capitulos_vistos", 0)
+
+        if estado in ["viendo", "completado", "pausado", "abandonado", "planeo_verlo"]:
+            seguimiento.estado = estado
+
+        try:
+            capitulos_vistos = int(capitulos_vistos)
+        except ValueError:
+            capitulos_vistos = 0
+
+        capitulos_vistos = max(0, capitulos_vistos)
+
+        if anime.episodios:
+            capitulos_vistos = min(capitulos_vistos, anime.episodios)
+
+        seguimiento.capitulos_vistos = capitulos_vistos
+        seguimiento.save()
+
+        return redirect("detalle_anime", anime_id=anime.id)
+
+    # =========================
+    # CREAR / EDITAR RESEÑA
+    # =========================
+    if (
+        request.method == "POST"
+        and request.user.is_authenticated
+        and "guardar_seguimiento" not in request.POST
+    ):
         form = ResenaForm(request.POST)
 
         if form.is_valid():
@@ -206,29 +255,37 @@ def detalle_anime(request, anime_id):
                     "contiene_spoiler": request.POST.get("contiene_spoiler") == "on",
                 },
             )
+
             xp_data = None
 
             if creada:
                 xp_data = sumar_xp(request.user, 50)
-                
+
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({
                     "ok": True,
                     "resena": {
-                    "id": resena.id,
-                    "usuario": resena.usuario.username,
-                    "texto": resena.texto,
-                    "puntuacion": resena.puntuacion,
-                    "fecha": resena.fecha.strftime("%d/%m/%Y %H:%M"),
-                    "contiene_spoiler": resena.contiene_spoiler,
-                    "likes": resena.likes.count(),
-              },
-               "xp": {
-                   "ganada": xp_data["xp_ganada"] if xp_data else 0,
-                   "nivel": xp_data["nivel"] if xp_data else None,
-                   "subio_nivel": xp_data["subio_nivel"] if xp_data else False,
-               },
-            })
+                        "id": resena.id,
+                        "usuario": resena.usuario.username,
+                        "usuario_id": resena.usuario.id,
+                        "usuario_foto": (
+                            resena.usuario.perfilusuario.foto_perfil.url
+                            if hasattr(resena.usuario, "perfilusuario")
+                            and resena.usuario.perfilusuario.foto_perfil
+                            else "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        ),
+                        "texto": resena.texto,
+                        "puntuacion": resena.puntuacion,
+                        "fecha": resena.fecha.strftime("%d/%m/%Y %H:%M"),
+                        "contiene_spoiler": resena.contiene_spoiler,
+                        "likes": resena.likes.count(),
+                    },
+                    "xp": {
+                        "ganada": xp_data["xp_ganada"] if xp_data else 0,
+                        "nivel": xp_data["nivel"] if xp_data else None,
+                        "subio_nivel": xp_data["subio_nivel"] if xp_data else False,
+                    },
+                })
 
             return redirect("detalle_anime", anime_id=anime.id)
 
@@ -256,6 +313,7 @@ def detalle_anime(request, anime_id):
             "resenas": resenas,
             "resena_form": form,
             "es_favorito": es_favorito,
+            "seguimiento": seguimiento,
         },
     )
 @login_required

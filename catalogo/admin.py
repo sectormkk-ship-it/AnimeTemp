@@ -1,6 +1,7 @@
 from django.contrib import admin
 from modeltranslation.admin import TranslationAdmin
 
+from .models import SeguimientoAnime
 from .models import StrikeUsuario
 from .models import Anime, Favorito, Amistad, MensajePrivado
 from .models import ReporteUsuario
@@ -49,3 +50,9 @@ class NotificacionAdmin(admin.ModelAdmin):
     list_display = ("usuario", "tipo", "mensaje", "leida", "fecha")
     list_filter = ("tipo", "leida", "fecha")
     search_fields = ("usuario__username", "mensaje")
+    
+@admin.register(SeguimientoAnime)
+class SeguimientoAnimeAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "anime", "estado", "capitulos_vistos", "actualizado_en")
+    list_filter = ("estado", "actualizado_en")
+    search_fields = ("usuario__username", "anime__titulo")    
