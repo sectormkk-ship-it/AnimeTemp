@@ -762,70 +762,131 @@ function agregarNotificacionNexus(mensaje, tipo = "sistema", solicitudId = null)
             mostrarToastNexus("No se pudo enviar el reporte.");
         });
     }
+function abrirResenasNexus() {
+    const usuarioId = nexusMenuUsuarioId;
 
-    function abrirResenasNexus() {
-        const usuarioId = nexusMenuUsuarioId;
-
-        if (!usuarioId) {
-            alert("No se detectó el ID del usuario.");
-            return;
-        }
-
-        fetch(`/usuario/${usuarioId}/resenas/`)
-            .then(response => response.json())
-            .then(data => {
-                const cantidad = data.resenas ? data.resenas.length : 0;
-
-                let html = `
-                    <div class="nexus-reviews-modal">
-                        <div class="nexus-reviews-box">
-                            <aside class="nexus-reviews-sidebar">
-                                <h3>Filtros</h3>
-                                <button type="button" class="nexus-filter-btn active">Todas</button>
-                                <button type="button" class="nexus-filter-btn">Mejores</button>
-                                <button type="button" class="nexus-filter-btn">Recientes</button>
-                                <button type="button" class="nexus-filter-btn">Peores</button>
-                            </aside>
-
-                            <section class="nexus-reviews-main">
-                                <div class="nexus-profile-review-header" style="background-image: url('${data.usuario_banner || "/static/img/default-banner.jpg"}');">
-                                    <div class="nexus-profile-review-overlay"></div>
-                                    <div class="nexus-profile-review-content">
-                                        <img src="${data.usuario_foto || "/static/img/default-profile.png"}" class="nexus-user-avatar" alt="Perfil">
-                                        <div class="nexus-user-info">
-                                            <h2>${data.usuario_nombre || "Usuario"}</h2>
-                                            <span>${cantidad} reseñas</span>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="nexus-close-reviews" onclick="cerrarResenasNexus()">✖</button>
-                                </div>
-                                <div class="nexus-reviews-content">
-                `;
-
-                if (cantidad > 0) {
-                    data.resenas.forEach(resena => {
-                        html += crearCardResenaNexus(resena);
-                    });
-                } else {
-                    html += `<p class="nexus-empty-reviews">Este usuario todavía no escribió reseñas.</p>`;
-                }
-
-                html += `
-                                </div>
-                            </section>
-                        </div>
-                    </div>
-                `;
-
-                const container = document.getElementById("nexus-reviews-container");
-                if (container) container.innerHTML = html;
-                activarFiltrosResenasNexus(data.resenas || []);
-            })
-            .catch(error => {
-                console.error("Error al cargar reseñas:", error);
-                alert("Error al cargar las reseñas.");
-            });
+    if (!usuarioId) {
+        alert("No se detectó el ID del usuario.");
+        return;
     }
+
+    fetch(`/usuario/${usuarioId}/resenas/`)
+        .then(response => response.json())
+        .then(data => {
+            const cantidad = data.resenas ? data.resenas.length : 0;
+
+            let html = `
+                <div class="nexus-reviews-modal">
+                    <div class="nexus-reviews-box">
+                        <aside class="nexus-reviews-sidebar">
+                            <h3>Menu Social</h3>
+                            <button type="button" class="nexus-filter-btn active">Todas</button>
+                            <button type="button" class="nexus-filter-btn">Mejores</button>
+                            <button type="button" class="nexus-filter-btn">Recientes</button>
+                            <button type="button" class="nexus-filter-btn">Sugerido</button>
+                            <button type="button" class="nexus-filter-btn">Mi seguimiento</button>
+                            <button type="button" class="nexus-filter-btn">Seguimientos guardados</button>
+                            <button type="button" class="nexus-filter-btn">Peores</button>
+                        </aside>
+
+                        <section class="nexus-reviews-main">
+                            <div class="nexus-profile-review-header" style="background-image: url('${data.usuario_banner || "/static/img/default-banner.jpg"}');">
+                                <div class="nexus-profile-review-overlay"></div>
+                                <div class="nexus-profile-review-content">
+                                    <img src="${data.usuario_foto || "/static/img/default-profile.png"}" class="nexus-user-avatar" alt="Perfil">
+                                    <div class="nexus-user-info">
+                                        <h2>${data.usuario_nombre || "Usuario"}</h2>
+                                        <span>${cantidad} reseñas</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="nexus-close-reviews" onclick="cerrarResenasNexus()">✖</button>
+                            </div>
+
+                            <div class="nexus-reviews-content">
+
+                                <div id="nexus-seguimiento-panel" class="nexus-seguimiento-box" style="display:none;">
+                                    <div class="nexus-seguimiento-header">
+                                        <h2>📺 Mi seguimiento</h2>
+                                        <p>Elegí un anime y configurá tu progreso.</p>
+                                    </div>
+
+                                    <div class="nexus-seguimiento-form">
+                                        <label>Anime</label>
+                                        <input
+                                            type="text"
+                                            id="seguimiento-anime-busqueda"
+                                            placeholder="Buscar anime para seguir..."
+                                        >
+
+                                        <div id="seguimiento-anime-resultados"></div>
+
+                                        <label>Estado</label>
+                                        <select id="seguimiento-estado" onchange="actualizarCamposSeguimiento()">
+                                            <option value="planeo_verlo">Planeo verlo</option>
+                                            <option value="viendo">Viendo</option>
+                                            <option value="completado">Completado</option>
+                                            <option value="pausado">Pausado</option>
+                                            <option value="abandonado">Abandonado</option>
+                                        </select>
+
+                                        <div id="seguimiento-capitulos-box" style="display:none;">
+                                            <label id="seguimiento-capitulos-label">Capítulos vistos</label>
+                                            <input type="number" id="seguimiento-capitulos" min="0" value="0">
+                                        </div>
+
+                                        <div id="seguimiento-motivo-box" style="display:none;">
+                                            <label>Motivo de abandono</label>
+                                            <textarea
+                                                id="seguimiento-motivo"
+                                                placeholder="¿Por qué abandonaste este anime?"
+                                            ></textarea>
+                                        </div>
+
+                                        <button type="button" id="guardar-seguimiento-btn">
+                                            Guardar seguimiento
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="nexus-seguimientos-guardados-panel" class="nexus-seguimientos-guardados" style="display:none;">
+                                    <h2>📚 Seguimientos guardados</h2>
+
+                                    <div id="lista-seguimientos">
+                                        <p>No tienes seguimientos todavía.</p>
+                                    </div>
+                                </div>
+
+                                <div id="nexus-lista-resenas">
+            `;
+
+            if (cantidad > 0) {
+                data.resenas.forEach(resena => {
+                    html += crearCardResenaNexus(resena);
+                });
+            } else {
+                html += `<p class="nexus-empty-reviews">Este usuario todavía no escribió reseñas.</p>`;
+            }
+
+            html += `
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            `;
+
+            const container = document.getElementById("nexus-reviews-container");
+            if (container) container.innerHTML = html;
+
+            activarFiltrosResenasNexus(data.resenas || []);
+            prepararMenuSocialSeguimiento();
+            actualizarCamposSeguimiento();
+        })
+        .catch(error => {
+            console.error("Error al cargar reseñas:", error);
+            alert("Error al cargar las reseñas.");
+        });
+}
 
     function crearCardResenaNexus(resena) {
         return `

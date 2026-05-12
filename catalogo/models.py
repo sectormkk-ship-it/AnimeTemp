@@ -444,11 +444,33 @@ class SeguimientoAnime(models.Model):
         ("planeo_verlo", "Planeo verlo"),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="seguimientos_anime")
-    anime = models.ForeignKey(Anime, on_delete=models.CASCADE, related_name="seguimientos")
-    estado = models.CharField(max_length=20, choices=ESTADOS, default="planeo_verlo")
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="seguimientos_anime"
+    )
+
+    anime = models.ForeignKey(
+        Anime,
+        on_delete=models.CASCADE,
+        related_name="seguimientos"
+    )
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        default="planeo_verlo"
+    )
+
     capitulos_vistos = models.PositiveIntegerField(default=0)
+
+    motivo_abandono = models.TextField(
+        blank=True,
+        null=True
+    )
+
     actualizado_en = models.DateTimeField(auto_now=True)
+
     creado_en = models.DateTimeField(auto_now_add=True)
 
     class Meta:
