@@ -178,10 +178,19 @@ class NotificacionesConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
 
-    async def enviar_notificacion(self, event):
-        await self.send(text_data=json.dumps({
-            "mensaje": event.get("mensaje", ""),
-            "tipo": event.get("tipo", "sistema"),
-            "total": event.get("total", 0),
-            "solicitud_id": event.get("solicitud_id"),
-        }))
+async def enviar_notificacion(self, event):
+    await self.send(text_data=json.dumps({
+        "mensaje": event.get("mensaje", ""),
+        "tipo": event.get("tipo", "sistema"),
+        "total": event.get("total", 0),
+        "solicitud_id": event.get("solicitud_id"),
+        "accion": event.get("accion"),
+
+        "emisor_id": event.get("emisor_id"),
+        "emisor_username": event.get("emisor_username"),
+        "emisor_foto": event.get("emisor_foto"),
+
+        "amigo_id": event.get("amigo_id"),
+        "amigo_username": event.get("amigo_username"),
+        "amigo_foto": event.get("amigo_foto"),
+    }))

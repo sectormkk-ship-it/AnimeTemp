@@ -1195,12 +1195,20 @@ def enviar_solicitud_amistad(request, usuario_id):
         solicitud=solicitud,
     )
 
+    foto_emisor, _ = obtener_imagenes_perfil(request.user)
+
     enviar_notificacion_nexus(
-        receptor,
-        mensaje,
-        "amistad",
-        solicitud.id
-    )
+    receptor,
+    mensaje,
+    "amistad",
+    solicitud.id,
+    extra={
+        "accion": "nueva_solicitud",
+        "emisor_id": request.user.id,
+        "emisor_username": request.user.username,
+        "emisor_foto": foto_emisor,
+    }
+   )
 
     if es_ajax:
         return JsonResponse({
@@ -1239,6 +1247,44 @@ def aceptar_solicitud(request, solicitud_id):
 
     solicitud.estado = "aceptada"
     solicitud.save()
+    
+    # ============================================================
+# TIEMPO REAL - NUEVO AMIGO
+# ============================================================
+
+    foto_emisor, _ = obtener_imagenes_perfil(
+    solicitud.emisor
+   )
+
+    foto_receptor, _ = obtener_imagenes_perfil(
+    solicitud.receptor
+   )
+
+    # PARA EL RECEPTOR
+    enviar_notificacion_nexus(
+    solicitud.receptor,
+    f"Ahora sos amigo de {solicitud.emisor.username}",
+    "amistad",
+    extra={
+        "accion": "nuevo_amigo",
+        "amigo_id": solicitud.emisor.id,
+        "amigo_username": solicitud.emisor.username,
+        "amigo_foto": foto_emisor,
+    }
+   )
+
+    # PARA EL EMISOR
+    enviar_notificacion_nexus(
+    solicitud.emisor,
+    f"{solicitud.receptor.username} aceptó tu solicitud",
+    "amistad",
+    extra={
+        "accion": "nuevo_amigo",
+        "amigo_id": solicitud.receptor.id,
+        "amigo_username": solicitud.receptor.username,
+        "amigo_foto": foto_receptor,
+    }
+   )
     Notificacion.objects.filter(solicitud=solicitud).update(leida=True)
 
     return redirect("solicitudes_amistad")
@@ -1689,7 +1735,7 @@ def marcar_notificaciones_leidas(request):
 
     return JsonResponse({"ok": True})
 
-def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema", solicitud_id=None):
+def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema", solicitud_id=None, extra=None):
     total = Notificacion.objects.filter(
         usuario=usuario,
         leida=False
@@ -1697,15 +1743,20 @@ def enviar_notificacion_nexus(usuario, mensaje, tipo="sistema", solicitud_id=Non
 
     channel_layer = get_channel_layer()
 
+    payload = {
+        "type": "enviar_notificacion",
+        "mensaje": mensaje,
+        "tipo": tipo,
+        "total": total,
+        "solicitud_id": solicitud_id,
+    }
+
+    if extra:
+        payload.update(extra)
+
     async_to_sync(channel_layer.group_send)(
         f"notificaciones_{usuario.id}",
-        {
-            "type": "enviar_notificacion",
-            "mensaje": mensaje,
-            "tipo": tipo,
-            "total": total,
-            "solicitud_id": solicitud_id,
-        }
+        payload
     )
     
     

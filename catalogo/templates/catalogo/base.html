@@ -844,38 +844,119 @@ function cargarMasMensajesNexus(usuarioId, offset) {
     }, 350);
 }
 
-    function conectarNotificacionesNexus() {
-        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+function conectarNotificacionesNexus() {
+    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
-        nexusNotificationSocket = new WebSocket(protocol + window.location.host + "/ws/notificaciones/");
+    nexusNotificationSocket = new WebSocket(
+        protocol + window.location.host + "/ws/notificaciones/"
+    );
 
-        nexusNotificationSocket.onmessage = function(e) {
+    nexusNotificationSocket.onmessage = function(e) {
         let data;
+
         try {
-        data = JSON.parse(e.data);
+            data = JSON.parse(e.data);
         } catch (error) {
-        console.error("Notificación WebSocket inválida:", e.data);
+            console.error("Notificación WebSocket inválida:", e.data);
+            return;
+        }
+
+        if (data.mensaje) {
+            mostrarToastNexus(data.mensaje, data.tipo || "sistema");
+            reproducirSonidoNotificacionNexus(data.tipo || "sistema");
+            agregarNotificacionNexus(
+                data.mensaje,
+                data.tipo || "sistema",
+                data.solicitud_id
+            );
+        }
+
+        // ======================================================
+        // SOLICITUD AMISTAD EN TIEMPO REAL
+        // ======================================================
+
+        if (data.accion === "nueva_solicitud") {
+            agregarSolicitudTiempoRealNexus(data);
+        }
+
+        if (data.accion === "nuevo_amigo") {
+            agregarAmigoTiempoRealNexus(data);
+       }
+
+        actualizarBadgeSolicitudes(
+            data.total || data.total_notificaciones || 0
+        );
+    };
+
+    nexusNotificationSocket.onerror = function(error) {
+        console.error("Error en WebSocket de notificaciones:", error);
+    };
+
+    nexusNotificationSocket.onclose = function() {
+        console.log("WebSocket de notificaciones cerrado");
+    };
+}
+
+function agregarAmigoTiempoRealNexus(data) {
+
+    const lista = document.querySelector(".anime-panel-friends");
+
+    if (!lista) return;
+
+    if (
+        document.getElementById(
+            "amigo-nexus-" + data.amigo_id
+        )
+    ) {
         return;
-        }
+    }
 
-     if (data.mensaje) {
-        mostrarToastNexus(data.mensaje, data.tipo || "sistema");
-        reproducirSonidoNotificacionNexus(data.tipo || "sistema");
-        agregarNotificacionNexus(data.mensaje, data.tipo || "sistema", data.solicitud_id);
-      }
+    const card = document.createElement("div");
 
-        actualizarBadgeSolicitudes(data.total || data.total_notificaciones || 0);
-        };
+    card.className = "anime-friend";
 
-        nexusNotificationSocket.onerror = function(error) {
-            console.error("Error en WebSocket de notificaciones:", error);
-        };
+    card.id = "amigo-nexus-" + data.amigo_id;
 
-        nexusNotificationSocket.onclose = function() {
-            console.log("WebSocket de notificaciones cerrado");
-        };
-        
-        }
+    card.style.opacity = "0";
+    card.style.transform = "translateX(-25px)";
+
+    card.innerHTML = `
+        <img
+            src="${data.amigo_foto}"
+            alt="perfil"
+            class="anime-friend-avatar"
+        >
+
+        <div class="anime-friend-info">
+
+            <span>
+                ${escaparHTMLNexus(data.amigo_username)}
+            </span>
+
+            <small class="anime-friend-status online">
+                🟢 En línea
+            </small>
+
+        </div>
+    `;
+
+    lista.prepend(card);
+
+    setTimeout(() => {
+
+        card.style.transition = "0.28s ease";
+
+        card.style.opacity = "1";
+        card.style.transform = "translateX(0)";
+
+    }, 50);
+
+    mostrarToastNexus(
+        `Ahora sos amigo de ${data.amigo_username}`,
+        "amistad"
+    );
+}
+
 function agregarNotificacionNexus(mensaje, tipo = "sistema", solicitudId = null) {
     const panel = document.querySelector(".anime-panel-right");
     if (!panel) return;
@@ -1256,6 +1337,50 @@ function toggleNexusMenu(button) {
         arrow.textContent = "▼";
     } else {
         arrow.textContent = "▶";
+    }
+}
+
+async function responderSolicitudNexus(solicitudId, accion) {
+
+    const url =
+        accion === "aceptar"
+            ? `/aceptar-solicitud/${solicitudId}/`
+            : `/rechazar-solicitud/${solicitudId}/`;
+
+    try {
+
+        const response = await fetch(url, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Error respondiendo solicitud");
+        }
+
+        const card = document.getElementById(
+            `solicitud-${solicitudId}`
+        );
+
+        if (card) {
+
+            card.style.opacity = "0";
+            card.style.transform = "translateX(40px)";
+
+            setTimeout(() => {
+                card.remove();
+            }, 250);
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        mostrarToastNexus(
+            "Error procesando solicitud",
+            "error"
+        );
     }
 }
 
