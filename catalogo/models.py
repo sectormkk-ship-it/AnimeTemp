@@ -43,6 +43,11 @@ class PerfilUsuario(models.Model):
 
     experiencia = models.IntegerField(default=0)
     nivel = models.IntegerField(default=1)
+    
+    ultimo_online = models.DateTimeField(
+    null=True,
+    blank=True
+    )
 
     def __str__(self):
         return self.usuario.username

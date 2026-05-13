@@ -368,11 +368,24 @@ function insertarEmoji(codigo, imagen) {
 
     if (!editor) return;
 
-    editor.innerHTML += `
-        <img src="${imagen}"
-             data-codigo="${codigo}"
-             class="emoji-anime">
-    `;
+    const img = document.createElement("img");
+    img.src = imagen;
+    img.dataset.codigo = codigo;
+    img.className = "emoji-anime emoji-editor";
+    img.alt = codigo;
+    img.contentEditable = "false";
+
+    editor.appendChild(img);
+    editor.appendChild(document.createTextNode("\u00A0"));
+
+    const range = document.createRange();
+    const selection = window.getSelection();
+
+    range.setStartAfter(editor.lastChild);
+    range.collapse(true);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
 
     editor.focus();
 }
@@ -681,7 +694,7 @@ function enviarRespuestaResena(event, resenaId) {
 
     if (!texto) return;
 
-    fetch(`/resena/${resenaId}/responder/`, {
+    fetch(`/responder-resena/${resenaId}/`, {
         method: "POST",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),

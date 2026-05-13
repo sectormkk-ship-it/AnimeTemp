@@ -1,3 +1,4 @@
+from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
@@ -17,7 +18,7 @@ urlpatterns = [
     # ============================================================
     # REGISTRO / PERFIL
     # ============================================================
-
+    path("logout/",auth_views.LogoutView.as_view(next_page="inicio"),name="logout"),
     path('registro/', views.registro, name='registro'),
     path('perfil/', views.perfil, name='perfil'),
     path('perfil/editar/', views.editar_perfil, name='editar_perfil'),

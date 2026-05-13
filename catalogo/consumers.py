@@ -1,20 +1,35 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
+
 from .models import MensajePrivado
 
 
+# ============================================================
+# CHAT PRIVADO EN TIEMPO REAL - NEXUS
+# ============================================================
+
 class ChatConsumer(AsyncWebsocketConsumer):
+
     async def connect(self):
         self.usuario = self.scope["user"]
-        self.usuario_id = self.scope["url_route"]["kwargs"]["usuario_id"]
+        self.otro_usuario_id = self.scope["url_route"]["kwargs"]["usuario_id"]
 
         if self.usuario.is_anonymous:
             await self.close()
             return
 
-        ids = sorted([int(self.usuario.id), int(self.usuario_id)])
+        if not await self.usuario_existe(self.otro_usuario_id):
+            await self.close()
+            return
+
+        ids = sorted([
+            int(self.usuario.id),
+            int(self.otro_usuario_id)
+        ])
+
         self.room_group_name = f"chat_{ids[0]}_{ids[1]}"
 
         await self.channel_layer.group_add(
@@ -32,9 +47,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
 
-        # Usuario escribiendo
+        # =========================
+        # INDICADOR "ESCRIBIENDO..."
+        # =========================
         if data.get("typing"):
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -46,21 +66,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             return
 
-        mensaje_texto = data.get("mensaje", "").strip()
+        # =========================
+        # MENSAJE NORMAL
+        # =========================
+        mensaje_texto = data.get("mensaje", "")
+
+        if not isinstance(mensaje_texto, str):
+            return
+
+        mensaje_texto = mensaje_texto.strip()
 
         if not mensaje_texto:
             return
 
+        # Evita mensajes gigantes accidentales
+        if len(mensaje_texto) > 1000:
+            mensaje_texto = mensaje_texto[:1000]
+
         mensaje = await self.guardar_mensaje(mensaje_texto)
-        foto = await self.obtener_foto(mensaje.remitente)
+        foto = await self.obtener_foto_usuario(self.usuario.id)
 
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "chat_message",
                 "mensaje": mensaje.mensaje,
-                "remitente": mensaje.remitente.username,
-                "remitente_id": mensaje.remitente.id,
+                "remitente": self.usuario.username,
+                "remitente_id": self.usuario.id,
                 "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
                 "foto": foto,
             }
@@ -68,27 +100,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
-            "mensaje": event["mensaje"],
-            "remitente": event["remitente"],
-            "remitente_id": event["remitente_id"],
-            "fecha": event["fecha"],
-            "foto": event.get("foto"),
-            "es_mio": event["remitente_id"] == self.usuario.id,
+            "mensaje": event.get("mensaje", ""),
+            "remitente": event.get("remitente", ""),
+            "remitente_id": event.get("remitente_id"),
+            "fecha": event.get("fecha", ""),
+            "foto": event.get("foto", "/static/img/default-profile.png"),
+            "es_mio": event.get("remitente_id") == self.usuario.id,
         }))
 
     async def chat_typing(self, event):
-        # No mostrar tu propio typing
-        if event["remitente_id"] == self.usuario.id:
+        if event.get("remitente_id") == self.usuario.id:
             return
 
         await self.send(text_data=json.dumps({
             "typing": True,
-            "remitente": event["remitente"],
+            "remitente": event.get("remitente", "Usuario"),
         }))
+
+    # ========================================================
+    # CONSULTAS A BASE DE DATOS
+    # ========================================================
+
+    @database_sync_to_async
+    def usuario_existe(self, usuario_id):
+        return User.objects.filter(id=usuario_id).exists()
 
     @database_sync_to_async
     def guardar_mensaje(self, mensaje_texto):
-        destinatario = User.objects.get(id=self.usuario_id)
+        destinatario = User.objects.get(id=self.otro_usuario_id)
 
         return MensajePrivado.objects.create(
             remitente=self.usuario,
@@ -97,25 +136,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     @database_sync_to_async
-    def obtener_foto(self, usuario):
+    def obtener_foto_usuario(self, usuario_id):
         try:
+            usuario = User.objects.select_related("perfilusuario").get(id=usuario_id)
+
             if usuario.perfilusuario.foto_perfil:
                 return usuario.perfilusuario.foto_perfil.url
+
         except Exception:
             pass
 
         return "/static/img/default-profile.png"
 
 
-class NotificacionesConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.user = self.scope["user"]
+# ============================================================
+# NOTIFICACIONES EN TIEMPO REAL - NEXUS
+# ============================================================
 
-        if self.user.is_anonymous:
+class NotificacionesConsumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        self.usuario = self.scope["user"]
+
+        if self.usuario.is_anonymous:
             await self.close()
             return
 
-        self.group_name = f"notificaciones_{self.user.id}"
+        self.group_name = f"notificaciones_{self.usuario.id}"
 
         await self.channel_layer.group_add(
             self.group_name,
@@ -133,8 +180,8 @@ class NotificacionesConsumer(AsyncWebsocketConsumer):
 
     async def enviar_notificacion(self, event):
         await self.send(text_data=json.dumps({
-                 "mensaje": event["mensaje"],
-                 "tipo": event["tipo"],
-                 "total": event["total"],
-                 "solicitud_id": event.get("solicitud_id"),  # 🔥 ESTA LINEA
+            "mensaje": event.get("mensaje", ""),
+            "tipo": event.get("tipo", "sistema"),
+            "total": event.get("total", 0),
+            "solicitud_id": event.get("solicitud_id"),
         }))

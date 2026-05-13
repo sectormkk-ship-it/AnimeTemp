@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.contrib.auth import login
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -161,8 +162,13 @@ def registro(request):
         form = UserCreationForm(request.POST)
 
         if form.is_valid():
-            form.save()
-            return redirect("login")
+            usuario = form.save()
+
+            PerfilUsuario.objects.get_or_create(usuario=usuario)
+
+            login(request, usuario)
+
+            return redirect("inicio")
     else:
         form = UserCreationForm()
 
@@ -821,7 +827,14 @@ def emision(request):
 def enviar_solicitud_amistad(request, usuario_id):
     receptor = get_object_or_404(User, id=usuario_id)
 
+    es_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+
     if request.user == receptor:
+        if es_ajax:
+            return JsonResponse({
+                "ok": False,
+                "error": "No podés agregarte a vos mismo."
+            })
         return redirect("buscar_usuarios")
 
     solicitud_existente = Amistad.objects.filter(
@@ -831,19 +844,33 @@ def enviar_solicitud_amistad(request, usuario_id):
     ).first()
 
     if solicitud_existente:
+        if es_ajax:
+            return JsonResponse({
+                "ok": False,
+                "error": "Ya enviaste una solicitud a este usuario."
+            })
         return redirect("buscar_usuarios")
 
-    amistad_existente = Amistad.objects.filter(
-        emisor=request.user,
-        receptor=receptor,
-        estado="aceptada"
-    ).exists() or Amistad.objects.filter(
-        emisor=receptor,
-        receptor=request.user,
-        estado="aceptada"
-    ).exists()
+    amistad_existente = (
+        Amistad.objects.filter(
+            emisor=request.user,
+            receptor=receptor,
+            estado="aceptada"
+        ).exists()
+        or
+        Amistad.objects.filter(
+            emisor=receptor,
+            receptor=request.user,
+            estado="aceptada"
+        ).exists()
+    )
 
     if amistad_existente:
+        if es_ajax:
+            return JsonResponse({
+                "ok": False,
+                "error": "Este usuario ya está en tu lista de amigos."
+            })
         return redirect("buscar_usuarios")
 
     solicitud = Amistad.objects.create(
@@ -852,19 +879,29 @@ def enviar_solicitud_amistad(request, usuario_id):
         estado="pendiente"
     )
 
+    mensaje = f"👥 {request.user.username} quiere agregarte como amigo."
+
     Notificacion.objects.create(
         usuario=receptor,
         tipo="amistad",
-        mensaje=f"👥 {request.user.username} quiere agregarte como amigo.",
+        mensaje=mensaje,
         solicitud=solicitud,
     )
 
     enviar_notificacion_nexus(
         receptor,
-        f"👥 {request.user.username} quiere agregarte como amigo.",
+        mensaje,
         "amistad",
-        solicitud.id  # 🔥 ESTA LINEA
+        solicitud.id
     )
+
+    if es_ajax:
+        return JsonResponse({
+            "ok": True,
+            "mensaje": f"Solicitud enviada a {receptor.username}.",
+            "usuario": receptor.username,
+            "solicitud_id": solicitud.id,
+        })
 
     return redirect("buscar_usuarios")
 
@@ -1154,16 +1191,33 @@ def chat_privado(request, usuario_id):
 def obtener_mensajes(request, usuario_id):
     amigo = get_object_or_404(User, id=usuario_id)
 
+    limite = 20
+
+    try:
+        offset = int(request.GET.get("offset", 0))
+    except ValueError:
+        offset = 0
+
+    offset = max(offset, 0)
+
     MensajePrivado.objects.filter(
         remitente=amigo,
         destinatario=request.user,
         leido=False,
     ).update(leido=True)
 
-    mensajes = MensajePrivado.objects.filter(
+    mensajes_query = MensajePrivado.objects.filter(
         remitente__in=[request.user, amigo],
         destinatario__in=[request.user, amigo],
-    ).order_by("fecha")
+    ).order_by("-fecha")
+
+    total_mensajes = mensajes_query.count()
+
+    mensajes = list(
+        mensajes_query[offset:offset + limite]
+    )
+
+    mensajes.reverse()
 
     data = []
 
@@ -1185,14 +1239,18 @@ def obtener_mensajes(request, usuario_id):
         leido=False,
     ).count()
 
+    hay_mas = offset + limite < total_mensajes
+
     return JsonResponse(
         {
             "amigo": amigo.username,
             "mensajes": data,
             "total_no_leidos": total_no_leidos,
+            "hay_mas": hay_mas,
+            "siguiente_offset": offset + limite,
+            "total_mensajes": total_mensajes,
         }
     )
-
 
 @login_required
 @require_POST

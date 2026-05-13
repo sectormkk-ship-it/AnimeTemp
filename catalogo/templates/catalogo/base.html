@@ -52,19 +52,25 @@
 
         {% if user.is_authenticated %}
 
-        <<a href="{% url 'perfil' %}" class="perfil-link">
+        <a href="{% url 'perfil' %}" class="perfil-link">
 
-         {% if user.perfilusuario.foto_perfil %}
-         <img src="{{ user.perfilusuario.foto_perfil.url }}"
-         alt="Perfil"
-         class="perfil-img"
-         onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-         {% else %}
-         <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-         alt="Perfil"
-         class="perfil-img">
-         {% endif %}
+        {% if user.perfilusuario.foto_perfil %}
 
+<img
+    src="{{ user.perfilusuario.foto_perfil.url }}"
+    alt="Perfil"
+    class="perfil-img"
+    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+
+{% else %}
+
+<img
+    src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+    alt="Perfil"
+    class="perfil-img"
+    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+
+{% endif %}
          <span>{{ user.username }}</span>
 
         
@@ -72,7 +78,12 @@
         </a>
 
              <a href="{% url 'favoritos' %}">Favoritos</a>
-             <a class="logout-btn" href="{% url 'logout' %}">Cerrar sesión</a>
+             <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                 {% csrf_token %}
+               <button type="submit" class="logout-btn">
+                 Cerrar sesión
+                   </button>
+                   </form>
 
          {% else %}
 
@@ -136,11 +147,16 @@
                              class="nexus-friend-avatar"
                              onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
                         >
-                        <span>{{ item.usuario.username }}</span>
+                      <div class="nexus-friend-user">
 
-                        {% if item.silenciado %}
-                        <span class="nexus-muted-icon" title="Usuario silenciado">🔕</span>
-                        {% endif %}
+                            <span>{{ item.usuario.username }}</span>
+
+                     <span class="estado-online {{ item.estado_online }}"></span>
+
+                    {% if item.silenciado %}
+                    <span class="nexus-muted-icon" title="Usuario silenciado">🔕</span>
+                    {% endif %}
+
                     </div>
 
                     <strong
@@ -253,6 +269,7 @@
         <button type="button" onclick="reportarUsuarioNexus()">🚩 Reportar</button>
         <button type="button" onclick="bloquearUsuarioNexus()">🚫 Bloquear</button>
         <button type="button" onclick="eliminarAmigoNexus()">🗑 Eliminar amigo</button>
+        <button type="button" onclick="enviarSolicitudNexus()">➕ Agregar amigo</button>  
     </div>
 
 <script>
@@ -356,6 +373,32 @@
         window.location.href = "/perfil/" + nexusMenuUsuarioId + "/";
     }
 
+    function enviarSolicitudNexus() {
+
+    if (!nexusMenuUsuarioId) {
+        mostrarToastNexus("No se detectó el usuario.");
+        return;
+    }
+
+    fetch(`/amistad/enviar/${nexusMenuUsuarioId}/`, {
+        method: "GET",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            mostrarToastNexus(data.mensaje || "Solicitud enviada.", "sistema");
+        } else {
+            mostrarToastNexus(data.error || "No se pudo enviar la solicitud.", "sistema");
+        }
+    })
+    .catch(() => {
+        mostrarToastNexus("Error al enviar solicitud.", "sistema");
+    });
+    }
+
     function verResenasNexus() {
         abrirResenasNexus();
     }
@@ -453,6 +496,9 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
     function abrirChatNexus(usuarioId, username) {
         nexusChatActualId = String(usuarioId);
         nexusChatActualUsername = username;
+        
+        localStorage.setItem("nexus_chat_actual_id",usuarioId);
+        localStorage.setItem("nexus_chat_actual_username",username);
 
         const panel = document.getElementById("animePanelWindow");
         const titulo = document.getElementById("nexus-chat-title");
@@ -500,30 +546,45 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
         return div.innerHTML;
     }
 
-    function agregarMensajeNexus(remitente, mensaje, fecha, esMio, foto) {
-        const mensajes = document.getElementById("nexus-chat-messages");
-        if (!mensajes) return;
+function agregarMensajeNexus(remitente, mensaje, fecha, esMio, foto) {
 
-        const vacio = document.getElementById("nexus-vacio");
-        if (vacio) vacio.remove();
+    const mensajes = document.getElementById("nexus-chat-messages");
 
-        const clase = esMio ? "mensaje mio" : "mensaje amigo";
-        const fotoFinal = foto || FOTO_DEFAULT;
+    if (!mensajes) return;
 
-        const item = document.createElement("div");
-        item.className = clase;
-        item.innerHTML = `
-            <img src="${escaparHTMLNexus(fotoFinal)}" class="foto-chat" alt="Perfil">
-            <div class="burbuja-chat">
-                <strong>${escaparHTMLNexus(remitente)}</strong>
-                <p>${escaparHTMLNexus(mensaje)}</p>
-                <span>${escaparHTMLNexus(fecha)}</span>
-            </div>
-        `;
+    const vacio = document.getElementById("nexus-vacio");
 
-        mensajes.appendChild(item);
-        mensajes.scrollTop = mensajes.scrollHeight;
-    }
+    if (vacio) vacio.remove();
+
+    const clase = esMio ? "mensaje mio" : "mensaje amigo";
+
+    const fotoFinal = foto || FOTO_DEFAULT;
+
+    const item = document.createElement("div");
+
+    item.className = clase;
+
+    item.innerHTML = `
+        <img
+            src="${escaparHTMLNexus(fotoFinal)}"
+            class="foto-chat"
+            alt="Perfil"
+            onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+        >
+
+        <div class="burbuja-chat">
+            <strong>${escaparHTMLNexus(remitente)}</strong>
+
+            <p>${escaparHTMLNexus(mensaje)}</p>
+
+            <span>${escaparHTMLNexus(fecha)}</span>
+        </div>
+    `;
+
+    mensajes.appendChild(item);
+
+    mensajes.scrollTop = mensajes.scrollHeight;
+}
 
     function mostrarTypingNexus(username) {
         const typingIndicator = document.getElementById("nexus-typing-indicator");
@@ -559,13 +620,18 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
     }
 
     function conectarWebSocketNexus(usuarioId) {
-        const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
-        nexusSocket = new WebSocket(protocol + window.location.host + "/ws/chat/" + usuarioId + "/");
+        if (nexusSocket) {
+        try {
+            nexusSocket.close();
+        } catch(e) {}
+      }
 
-        nexusSocket.onopen = function () {
-            console.log("Nexus WebSocket conectado con usuario", usuarioId);
-        };
+      const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
+     nexusSocket = new WebSocket(
+         protocol + window.location.host + "/ws/chat/" + usuarioId + "/"
+     );
 
         nexusSocket.onmessage = function (e) {
             let data;
@@ -611,33 +677,87 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
         };
 
         nexusSocket.onclose = function () {
-            console.log("Nexus WebSocket cerrado");
-        };
+
+        console.log("Nexus WebSocket cerrado");
+
+       if (!nexusCerrandoSocketManual && nexusChatActualId) {
+
+            console.log("Intentando reconectar WebSocket...");
+
+            setTimeout(() => {
+              conectarWebSocketNexus(nexusChatActualId);
+              }, 1500);
+          }
+     };
+     
+    
     }
 
-    function enviarMensajeNexus() {
-        const input = document.getElementById("nexus-message-input");
-        if (!input) return;
+    
+    
 
-        const mensaje = input.value.trim();
+     function enviarMensajeNexus() {
 
-        if (!nexusChatActualId) {
-            alert("Primero seleccioná un amigo.");
-            return;
-        }
+    const input = document.getElementById("nexus-message-input");
 
-        if (!mensaje) return;
+    if (!input) return;
 
-        if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) {
-            alert("El chat todavía no está conectado. Esperá un segundo o volvé a seleccionar el amigo.");
-            conectarWebSocketNexus(nexusChatActualId);
-            return;
-        }
+    const mensaje = input.value.trim();
 
-        nexusSocket.send(JSON.stringify({ mensaje: mensaje }));
-        input.value = "";
-        ocultarTypingNexus();
+    if (!nexusChatActualId) {
+        alert("Primero seleccioná un amigo.");
+        return;
     }
+
+    if (!mensaje) return;
+
+    if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) {
+
+        alert(
+            "El chat todavía no está conectado. Esperá un segundo o volvé a seleccionar el amigo."
+        );
+
+        conectarWebSocketNexus(nexusChatActualId);
+
+        return;
+    }
+
+    // =====================================================
+    // ANTI DOBLE ENVÍO
+    // =====================================================
+
+    if (window.nexusEnviandoMensaje) return;
+
+    window.nexusEnviandoMensaje = true;
+
+    // =====================================================
+    // ENVIAR MENSAJE
+    // =====================================================
+
+    nexusSocket.send(
+        JSON.stringify({
+            mensaje: mensaje
+        })
+    );
+
+    // =====================================================
+    // LIMPIAR INPUT
+    // =====================================================
+
+    input.value = "";
+
+    ocultarTypingNexus();
+
+    // =====================================================
+    // DESBLOQUEAR ENVÍO
+    // =====================================================
+
+    setTimeout(() => {
+
+        window.nexusEnviandoMensaje = false;
+
+    }, 350);
+}
 
     function conectarNotificacionesNexus() {
         const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
@@ -814,7 +934,7 @@ function abrirResenasNexus() {
                             <div class="nexus-profile-review-header" style="background-image: url('${data.usuario_banner || "/static/img/default-banner.jpg"}');">
                                 <div class="nexus-profile-review-overlay"></div>
                                 <div class="nexus-profile-review-content">
-                                    <img src="${data.usuario_foto || "/static/img/default-profile.png"}" class="nexus-user-avatar" alt="Perfil">
+                                    <img src="${data.usuario_foto || "/static/img/default-profile.png"}" class="nexus-user-avatar" alt="Perfil" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                                     <div class="nexus-user-info">
                                         <h2>${data.usuario_nombre || "Usuario"}</h2>
                                         <span>${cantidad} reseñas</span>
@@ -909,21 +1029,36 @@ function abrirResenasNexus() {
         });
 }
 
-    function crearCardResenaNexus(resena) {
-        return `
-            <div class="nexus-review-card">
-                <img src="${resena.imagen}" alt="${escaparHTMLNexus(resena.anime)}">
-                <div class="nexus-review-info">
-                    <h3>${escaparHTMLNexus(resena.anime)}</h3>
-                    <p>${resena.texto || ""}</p>
-                </div>
-                <div class="nexus-review-meta">
-                    ⭐ ${resena.puntuacion}/10
-                    <small>${resena.fecha}</small>
-                </div>
+function crearCardResenaNexus(resena) {
+
+    return `
+        <div class="nexus-review-card">
+
+            <img
+                src="${resena.imagen}"
+                alt="${escaparHTMLNexus(resena.anime)}"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+            >
+
+            <div class="nexus-review-info">
+
+                <h3>${escaparHTMLNexus(resena.anime)}</h3>
+
+                <p>${escaparHTMLNexus(resena.texto || "")}</p>
+
             </div>
-        `;
-    }
+
+            <div class="nexus-review-meta">
+
+                ⭐ ${resena.puntuacion}/10
+
+                <small>${resena.fecha}</small>
+
+            </div>
+
+        </div>
+    `;
+}
 
     function activarFiltrosResenasNexus(resenas) {
         const botones = document.querySelectorAll(".nexus-filter-btn");
@@ -944,16 +1079,27 @@ function abrirResenasNexus() {
         });
     }
 
-    function renderizarResenasNexus(resenas) {
-        const contenedor = document.querySelector(".nexus-reviews-content");
-        if (!contenedor) return;
+function renderizarResenasNexus(resenas) {
 
-        if (resenas.length > 0) {
-            contenedor.innerHTML = resenas.map(crearCardResenaNexus).join("");
-        } else {
-            contenedor.innerHTML = `<p class="nexus-empty-reviews">No hay reseñas disponibles.</p>`;
-        }
+    const contenedor = document.getElementById("nexus-lista-resenas");
+
+    if (!contenedor) return;
+
+    if (resenas.length > 0) {
+
+        contenedor.innerHTML = resenas
+            .map(crearCardResenaNexus)
+            .join("");
+
+    } else {
+
+        contenedor.innerHTML = `
+            <p class="nexus-empty-reviews">
+                No hay reseñas disponibles.
+            </p>
+        `;
     }
+}
 
     function cerrarResenasNexus() {
         const container = document.getElementById("nexus-reviews-container");
@@ -977,6 +1123,21 @@ function abrirResenasNexus() {
         }
 
         conectarNotificacionesNexus();
+          const ultimoChatId = localStorage.getItem(
+               "nexus_chat_actual_id"
+     );
+
+         const ultimoChatUsername = localStorage.getItem(
+              "nexus_chat_actual_username"
+         );
+
+           if (ultimoChatId && ultimoChatUsername) {
+
+           abrirChatNexus(
+           ultimoChatId,
+           ultimoChatUsername
+           );
+         }
     });
 
 function reproducirSonidoNotificacionNexus() {

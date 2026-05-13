@@ -1,13 +1,23 @@
-from .models import Amistad, MensajePrivado, Notificacion
-from django.db.models import Q
+from datetime import timedelta
+
+from django.utils import timezone
+
+from .models import (
+    Amistad,
+    MensajePrivado,
+    Notificacion,
+)
+
 
 def anime_nexus(request):
+
     if not request.user.is_authenticated:
         return {}
 
-    # =========================
-    # AMIGOS
-    # =========================
+    # =====================================================
+    # AMISTADES
+    # =====================================================
+
     amistades = (
         Amistad.objects.filter(
             estado="aceptada",
@@ -21,14 +31,38 @@ def anime_nexus(request):
     )
 
     amigos_nexus = []
+
     total_mensajes_no_leidos = 0
 
     for amistad in amistades:
+
         amigo = (
             amistad.receptor
             if amistad.emisor == request.user
             else amistad.emisor
         )
+
+        # =================================================
+        # ESTADO ONLINE
+        # =================================================
+
+        estado_online = "offline"
+
+        perfil_amigo = getattr(amigo, "perfilusuario", None)
+
+        if perfil_amigo and perfil_amigo.ultimo_online:
+
+            diferencia = timezone.now() - perfil_amigo.ultimo_online
+
+            if diferencia <= timedelta(minutes=2):
+                estado_online = "online"
+
+            elif diferencia <= timedelta(minutes=15):
+                estado_online = "ausente"
+
+        # =================================================
+        # MENSAJES NO LEIDOS
+        # =================================================
 
         no_leidos = MensajePrivado.objects.filter(
             remitente=amigo,
@@ -38,32 +72,46 @@ def anime_nexus(request):
 
         total_mensajes_no_leidos += no_leidos
 
+        # =================================================
+        # LISTA AMIGOS NEXUS
+        # =================================================
+
         amigos_nexus.append(
             {
                 "usuario": amigo,
                 "no_leidos": no_leidos,
+                "estado_online": estado_online,
             }
         )
 
-    # =========================
-    # NOTIFICACIONES NUEVAS
-    # =========================
+    # =====================================================
+    # SOLICITUDES PENDIENTES
+    # =====================================================
+
+    solicitudes_pendientes_nexus = Amistad.objects.filter(
+        receptor=request.user,
+        estado="pendiente"
+    ).order_by("-fecha")
+
+    # =====================================================
+    # NOTIFICACIONES
+    # =====================================================
+
     notificaciones_nexus = Notificacion.objects.filter(
-    Q(usuario=request.user, leida=False) |
-    Q(usuario=request.user, tipo="amistad", solicitud__estado="pendiente")
-    ).distinct().order_by("-fecha")
-    
-    total_notificaciones_nexus = Notificacion.objects.filter(
         usuario=request.user,
         leida=False
-    ).count()
+    ).order_by("-fecha")
 
-    # =========================
-    # RETURN FINAL
-    # =========================
+    total_notificaciones_nexus = notificaciones_nexus.count()
+
+    # =====================================================
+    # RETURN
+    # =====================================================
+
     return {
         "amigos_nexus": amigos_nexus,
         "total_mensajes_no_leidos": total_mensajes_no_leidos,
+        "solicitudes_pendientes_nexus": solicitudes_pendientes_nexus,
         "notificaciones_nexus": notificaciones_nexus,
         "total_notificaciones_nexus": total_notificaciones_nexus,
     }

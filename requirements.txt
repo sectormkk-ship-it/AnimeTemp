@@ -7,6 +7,7 @@ cbor2==6.0.1
 certifi==2026.4.22
 cffi==2.0.0
 channels==4.3.2
+channels_redis==4.3.0
 charset-normalizer==3.4.7
 cloudinary==1.44.2
 constantly==23.10.4
@@ -31,6 +32,7 @@ pyasn1==0.6.3
 pyasn1_modules==0.4.2
 pycparser==3.0
 pyOpenSSL==26.1.0
+redis==7.4.0
 requests==2.33.1
 service-identity==24.2.0
 six==1.17.0
