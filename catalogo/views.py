@@ -338,6 +338,87 @@ def registro(request):
 
 
 # ============================================================
+# actividades recientes de amigos :D
+# ============================================================
+
+@login_required
+def actividad_social(request):
+
+    amigos_ids = list(
+
+        Amistad.objects.filter(
+            estado="aceptada"
+        ).filter(
+            Q(emisor=request.user) |
+            Q(receptor=request.user)
+        )
+    )
+
+    ids = []
+
+    for amistad in amigos_ids:
+
+        if amistad.emisor == request.user:
+            ids.append(amistad.receptor.id)
+        else:
+            ids.append(amistad.emisor.id)
+
+    resenas_recientes = (
+        Resena.objects
+        .filter(usuario_id__in=ids)
+        .select_related("usuario", "anime")
+        .order_by("-fecha")[:30]
+    )
+
+    seguimientos_recientes = (
+        SeguimientoAnime.objects
+        .filter(usuario_id__in=ids)
+        .select_related("usuario", "anime")
+        .order_by("-actualizado_en")[:30]
+    )
+
+    actividad = sorted(
+
+        chain(
+
+            [
+                {
+                    "tipo": "resena",
+                    "usuario": r.usuario,
+                    "anime": r.anime,
+                    "texto": f"⭐ reseñó {r.anime.titulo}",
+                    "fecha": r.fecha,
+                }
+                for r in resenas_recientes
+            ],
+
+            [
+                {
+                    "tipo": "seguimiento",
+                    "usuario": s.usuario,
+                    "anime": s.anime,
+                    "texto": f"📺 comenzó {s.anime.titulo}",
+                    "fecha": s.actualizado_en,
+                }
+                for s in seguimientos_recientes
+            ]
+
+        ),
+
+        key=lambda x: x["fecha"],
+        reverse=True
+
+    )[:50]
+
+    return render(
+        request,
+        "catalogo/actividad.html",
+        {
+            "actividad": actividad,
+        }
+    )
+
+# ============================================================
 # EMOJIS PERSONALIZADOS EN RESEÑAS :D
 # ============================================================
 

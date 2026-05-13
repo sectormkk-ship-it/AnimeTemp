@@ -23,7 +23,7 @@ urlpatterns = [
     path('perfil/', views.perfil, name='perfil'),
     path('perfil/editar/', views.editar_perfil, name='editar_perfil'),
     path('perfil/<int:usuario_id>/', views.perfil_publico, name='perfil_publico'),
-
+    path("actividad/",views.actividad_social,name="actividad_social"),
     # ============================================================
     # FAVORITOS
     # ============================================================

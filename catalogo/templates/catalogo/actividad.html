@@ -1,0 +1,97 @@
+{% extends "catalogo/base.html" %}
+
+{% block contenido %}
+
+<div class="actividad-social-wrapper">
+
+    <div class="actividad-social-header">
+
+        <h1>🔥 Actividad de tus amigos</h1>
+
+        <p>
+            Mirá lo último que están haciendo las personas que seguís en AnimeTemp.
+        </p>
+
+    </div>
+
+    <div class="actividad-social-feed">
+
+        {% for item in actividad %}
+
+        <div class="actividad-social-card">
+
+            <div class="actividad-social-avatar">
+
+                {% if item.usuario.perfilusuario.foto_perfil %}
+                    <img
+                        src="{{ item.usuario.perfilusuario.foto_perfil.url }}"
+                        alt="Avatar"
+                    >
+                {% else %}
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        alt="Avatar"
+                    >
+                {% endif %}
+
+            </div>
+
+            <div class="actividad-social-info">
+
+                <div class="actividad-social-top">
+
+                    <a href="{% url 'perfil_publico' item.usuario.id %}">
+                        {{ item.usuario.username }}
+                    </a>
+
+                    <small>
+                        {{ item.fecha|timesince }} atrás
+                    </small>
+
+                </div>
+
+                <p class="actividad-social-texto">
+                    {{ item.texto }}
+                </p>
+
+                {% if item.anime %}
+
+                <a href="{% url 'detalle_anime' item.anime.id %}"
+                   class="actividad-social-anime">
+
+                    <img
+                        src="{{ item.anime.imagen }}"
+                        alt="{{ item.anime.titulo }}"
+                    >
+
+                    <span>
+                        {{ item.anime.titulo }}
+                    </span>
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="actividad-social-vacio">
+
+            <h2>😢 No hay actividad todavía</h2>
+
+            <p>
+                Agregá amigos para empezar a ver actividad social.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
