@@ -1235,9 +1235,9 @@
 
     background:
     linear-gradient(
-        rgba(2, 6, 23, 0.82),
-        rgba(2, 6, 23, 0.94)
-    ),
+    rgba(2, 6, 23, 0.55),
+    rgba(2, 6, 23, 0.72)
+   ),
 
     url("https://res.cloudinary.com/dbxoayckm/image/upload/v1778681920/ChatGPT_Image_13_may_2026_11_17_11_a.m._vrw0xl.png");
 
@@ -1447,10 +1447,12 @@
         height: 230px;
         background-image: linear-gradient(rgba(2, 6, 23, 0.35), rgba(2, 6, 23, 0.75)),
         url("{% if perfil_usuario.fondo_perfil %}{{ perfil_usuario.fondo_perfil.url }}{% else %}https://images.unsplash.com/photo-1578632767115-351597cf2477{% endif %}");
-        background-size: cover;
+        background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
+        background-color: #020617;   
     }
+
 
     .perfil-privado-content {
         padding: 30px;
@@ -3936,8 +3938,8 @@ img {
 .hero-content {
     position: relative;
     z-index: 2;
-    padding-top: 40px;
-    padding-bottom: 260px;
+    padding-top: 90px;
+    padding-bottom: 220px;
 }
 
 .hero-top-comunidad {
@@ -3945,6 +3947,10 @@ img {
     left: 24px;
     right: 24px;
     bottom: 20px;
+
+    max-width: 1380px;
+    margin: 0 auto;
+
     z-index: 3;
 }
 
