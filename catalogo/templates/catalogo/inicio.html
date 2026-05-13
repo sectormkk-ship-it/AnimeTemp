@@ -2,53 +2,57 @@
 
 {% block contenido %}
 
-<section class="hero">
+<section class="hero hero-con-top">
+
     <div class="hero-content">
         <h1>Catálogo de Anime por Temporada</h1>
         <p>Explorá estrenos, clásicos y animes populares organizados por temporada, género y puntuación.</p>
         <a href="#catalogo" class="hero-btn">Explorar catálogo</a>
     </div>
-</section>
 
-{% if top_comunidad %}
-<section class="top-comunidad-section">
+    {% if top_comunidad %}
+    <div class="hero-top-comunidad">
 
-    <div class="top-comunidad-header">
-        <h2>🔥 Top 10 de la comunidad</h2>
-        <p>Los animes mejor puntuados por los usuarios de AnimeTemp.</p>
+        <div class="hero-top-header">
+            <h2>🔥 Top 10 de la comunidad</h2>
+            <span>Mejor puntuados por usuarios</span>
+        </div>
+
+        <div class="hero-top-scroll">
+
+            {% for anime in top_comunidad %}
+            <a href="{% url 'detalle_anime' anime.id %}" class="hero-top-card">
+
+                <span class="hero-top-rank">#{{ forloop.counter }}</span>
+
+                <img
+                    src="{{ anime.imagen }}"
+                    alt="{{ anime.titulo }}"
+                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+                >
+
+                <div class="hero-top-overlay">
+                    <h3>{{ anime.titulo_es|default:anime.titulo }}</h3>
+
+                    <p>
+                        {{ anime.descripcion_es|default:anime.descripcion|truncatechars:120 }}
+                    </p>
+
+                    <strong>
+                        ⭐ {{ anime.promedio_comunidad|floatformat:1 }}/10
+                        · {{ anime.total_resenas }} reseñas
+                    </strong>
+                </div>
+
+            </a>
+            {% endfor %}
+
+        </div>
+
     </div>
-
-    <div class="top-comunidad-lista">
-
-        {% for anime in top_comunidad %}
-        <a href="{% url 'detalle_anime' anime.id %}" class="top-comunidad-card">
-
-            <span class="top-comunidad-rank">
-                #{{ forloop.counter }}
-            </span>
-
-            <img
-                src="{{ anime.imagen }}"
-                alt="{{ anime.titulo }}"
-                onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
-            >
-
-            <div class="top-comunidad-info">
-                <h3>{{ anime.titulo_es|default:anime.titulo }}</h3>
-
-                <p>
-                    ⭐ {{ anime.promedio_comunidad|floatformat:1 }}/10
-                    · {{ anime.total_resenas }} reseñas
-                </p>
-            </div>
-
-        </a>
-        {% endfor %}
-
-    </div>
+    {% endif %}
 
 </section>
-{% endif %}
 
 <div class="temporadas">
     <a href="/?temporada=invierno">Invierno</a>
