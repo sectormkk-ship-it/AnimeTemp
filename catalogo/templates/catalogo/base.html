@@ -510,7 +510,7 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
 
         cerrarSocketChatActual();
 
-        fetch("/chat/mensajes/" + usuarioId + "/")
+        fetch("/chat/mensajes/" + usuarioId + "/?offset=0")
             .then(response => response.json())
             .then(data => {
                 if (!mensajes) return;
@@ -519,16 +519,29 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
                 if (!data.mensajes || data.mensajes.length === 0) {
                     mensajes.innerHTML = '<p id="nexus-vacio">Todavía no hay mensajes con este usuario.</p>';
                 } else {
-                    data.mensajes.forEach(mensaje => {
-                        agregarMensajeNexus(
-                            mensaje.remitente,
-                            mensaje.mensaje || mensaje.texto || mensaje.message || "",
-                            mensaje.fecha || "",
-                            Boolean(mensaje.es_mio),
-                            mensaje.foto || FOTO_DEFAULT
-                        );
-                    });
-                }
+
+                if (data.hay_mas) {
+                     mensajes.innerHTML = `
+                        <button
+                              type="button"
+                              id="nexus-cargar-mas"
+                              class="nexus-cargar-mas"
+                              onclick="cargarMasMensajesNexus('${usuarioId}', ${data.siguiente_offset})">
+                              Mostrar más mensajes
+                        </button>
+                  `;
+            }
+
+    data.mensajes.forEach(mensaje => {
+        agregarMensajeNexus(
+            mensaje.remitente,
+            mensaje.mensaje || mensaje.texto || mensaje.message || "",
+            mensaje.fecha || "",
+            Boolean(mensaje.es_mio),
+            mensaje.foto || FOTO_DEFAULT
+        );
+    });
+}
 
                 actualizarBadgeGlobal(data.total_no_leidos || 0);
                 actualizarBadgeAmigo(usuarioId, 0);
@@ -546,22 +559,12 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
         return div.innerHTML;
     }
 
-function agregarMensajeNexus(remitente, mensaje, fecha, esMio, foto) {
-
-    const mensajes = document.getElementById("nexus-chat-messages");
-
-    if (!mensajes) return;
-
-    const vacio = document.getElementById("nexus-vacio");
-
-    if (vacio) vacio.remove();
+function crearMensajeNexusElemento(remitente, mensaje, fecha, esMio, foto) {
 
     const clase = esMio ? "mensaje mio" : "mensaje amigo";
-
     const fotoFinal = foto || FOTO_DEFAULT;
 
     const item = document.createElement("div");
-
     item.className = clase;
 
     item.innerHTML = `
@@ -574,17 +577,97 @@ function agregarMensajeNexus(remitente, mensaje, fecha, esMio, foto) {
 
         <div class="burbuja-chat">
             <strong>${escaparHTMLNexus(remitente)}</strong>
-
             <p>${escaparHTMLNexus(mensaje)}</p>
-
             <span>${escaparHTMLNexus(fecha)}</span>
         </div>
     `;
 
-    mensajes.appendChild(item);
+    return item;
+}
 
+
+function agregarMensajeNexus(remitente, mensaje, fecha, esMio, foto) {
+
+    const mensajes = document.getElementById("nexus-chat-messages");
+
+    if (!mensajes) return;
+
+    const vacio = document.getElementById("nexus-vacio");
+
+    if (vacio) vacio.remove();
+
+    const item = crearMensajeNexusElemento(
+        remitente,
+        mensaje,
+        fecha,
+        esMio,
+        foto
+    );
+
+    mensajes.appendChild(item);
     mensajes.scrollTop = mensajes.scrollHeight;
 }
+
+function cargarMasMensajesNexus(usuarioId, offset) {
+
+    const mensajes = document.getElementById("nexus-chat-messages");
+    const boton = document.getElementById("nexus-cargar-mas");
+
+    if (!mensajes || !usuarioId) return;
+
+    if (boton) {
+        boton.disabled = true;
+        boton.textContent = "Cargando...";
+    }
+
+    fetch(`/chat/mensajes/${usuarioId}/?offset=${offset}`)
+        .then(response => response.json())
+        .then(data => {
+
+            if (boton) boton.remove();
+
+            const scrollAntes = mensajes.scrollHeight;
+
+            if (data.hay_mas) {
+                const nuevoBoton = document.createElement("button");
+                nuevoBoton.type = "button";
+                nuevoBoton.id = "nexus-cargar-mas";
+                nuevoBoton.className = "nexus-cargar-mas";
+                nuevoBoton.textContent = "Mostrar más mensajes";
+                nuevoBoton.onclick = function () {
+                    cargarMasMensajesNexus(usuarioId, data.siguiente_offset);
+                };
+
+                mensajes.prepend(nuevoBoton);
+            }
+
+            data.mensajes.forEach(mensaje => {
+                const item = crearMensajeNexusElemento(
+                    mensaje.remitente,
+                    mensaje.mensaje || mensaje.texto || mensaje.message || "",
+                    mensaje.fecha || "",
+                    Boolean(mensaje.es_mio),
+                    mensaje.foto || FOTO_DEFAULT
+                );
+
+                mensajes.insertBefore(
+                    item,
+                    mensajes.querySelector("#nexus-cargar-mas")?.nextSibling || mensajes.firstChild
+                );
+            });
+
+            const scrollDespues = mensajes.scrollHeight;
+            mensajes.scrollTop = scrollDespues - scrollAntes;
+        })
+        .catch(error => {
+            console.error("Error cargando más mensajes:", error);
+
+            if (boton) {
+                boton.disabled = false;
+                boton.textContent = "Mostrar más mensajes";
+            }
+        });
+    }
 
     function mostrarTypingNexus(username) {
         const typingIndicator = document.getElementById("nexus-typing-indicator");

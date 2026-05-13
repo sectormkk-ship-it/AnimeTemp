@@ -9,6 +9,47 @@
         <a href="#catalogo" class="hero-btn">Explorar catálogo</a>
     </div>
 </section>
+
+{% if top_comunidad %}
+<section class="top-comunidad-section">
+
+    <div class="top-comunidad-header">
+        <h2>🔥 Top 10 de la comunidad</h2>
+        <p>Los animes mejor puntuados por los usuarios de AnimeTemp.</p>
+    </div>
+
+    <div class="top-comunidad-lista">
+
+        {% for anime in top_comunidad %}
+        <a href="{% url 'detalle_anime' anime.id %}" class="top-comunidad-card">
+
+            <span class="top-comunidad-rank">
+                #{{ forloop.counter }}
+            </span>
+
+            <img
+                src="{{ anime.imagen }}"
+                alt="{{ anime.titulo }}"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+            >
+
+            <div class="top-comunidad-info">
+                <h3>{{ anime.titulo_es|default:anime.titulo }}</h3>
+
+                <p>
+                    ⭐ {{ anime.promedio_comunidad|floatformat:1 }}/10
+                    · {{ anime.total_resenas }} reseñas
+                </p>
+            </div>
+
+        </a>
+        {% endfor %}
+
+    </div>
+
+</section>
+{% endif %}
+
 <div class="temporadas">
     <a href="/?temporada=invierno">Invierno</a>
     <a href="/?temporada=primavera">Primavera</a>
@@ -16,30 +57,47 @@
     <a href="/?temporada=otoño">Otoño</a>
     <a href="/">Todas</a>
 </div>
+
 <form method="GET" style="padding: 25px; text-align: center;">
-    <input type="text" name="buscar" placeholder="Buscar anime..." value="{{ busqueda|default:'' }}"
-        style="padding: 12px; width: 250px; border-radius: 8px; border: none;">
+
+    <input
+        type="text"
+        name="buscar"
+        placeholder="Buscar anime..."
+        value="{{ busqueda|default:'' }}"
+        style="padding: 12px; width: 250px; border-radius: 8px; border: none;"
+    >
 
     <select name="temporada" style="padding: 12px; border-radius: 8px;">
         <option value="">Todas las temporadas</option>
-        <option value="invierno">Invierno</option>
-        <option value="primavera">Primavera</option>
-        <option value="verano">Verano</option>
-        <option value="otoño">Otoño</option>
+        <option value="invierno" {% if temporada_actual == "invierno" %}selected{% endif %}>Invierno</option>
+        <option value="primavera" {% if temporada_actual == "primavera" %}selected{% endif %}>Primavera</option>
+        <option value="verano" {% if temporada_actual == "verano" %}selected{% endif %}>Verano</option>
+        <option value="otoño" {% if temporada_actual == "otoño" %}selected{% endif %}>Otoño</option>
     </select>
 
     <select name="genero" style="padding: 12px; border-radius: 8px;">
         <option value="">Todos los géneros</option>
-        <option value="Acción">Acción</option>
-        <option value="Aventura">Aventura</option>
-        <option value="Comedia">Comedia</option>
-        <option value="Drama">Drama</option>
-        <option value="Fantasía">Fantasía</option>
-        <option value="Romance">Romance</option>
-        <option value="Terror">Terror</option>
+        <option value="Acción" {% if genero_actual == "Acción" %}selected{% endif %}>Acción</option>
+        <option value="Aventura" {% if genero_actual == "Aventura" %}selected{% endif %}>Aventura</option>
+        <option value="Comedia" {% if genero_actual == "Comedia" %}selected{% endif %}>Comedia</option>
+        <option value="Drama" {% if genero_actual == "Drama" %}selected{% endif %}>Drama</option>
+        <option value="Fantasía" {% if genero_actual == "Fantasía" %}selected{% endif %}>Fantasía</option>
+        <option value="Romance" {% if genero_actual == "Romance" %}selected{% endif %}>Romance</option>
+        <option value="Terror" {% if genero_actual == "Terror" %}selected{% endif %}>Terror</option>
     </select>
 
-    <button type="submit" style="padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer;">
+    <select name="orden" style="padding: 12px; border-radius: 8px;">
+        <option value="recientes" {% if orden_actual == "recientes" %}selected{% endif %}>Más recientes</option>
+        <option value="az" {% if orden_actual == "az" %}selected{% endif %}>A-Z</option>
+        <option value="za" {% if orden_actual == "za" %}selected{% endif %}>Z-A</option>
+        <option value="puntuacion" {% if orden_actual == "puntuacion" %}selected{% endif %}>Mayor puntuación</option>
+    </select>
+
+    <button
+        type="submit"
+        style="padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer;"
+    >
         Buscar
     </button>
 
@@ -49,18 +107,24 @@
 
     {% for anime in animes %}
     <a href="{% url 'detalle_anime' anime.id %}" style="text-decoration: none; color: inherit;">
+
         <div class="anime-card-horizontal">
 
             <div class="anime-img-box">
-                <img src="{{ anime.imagen }}" alt="{{ anime.titulo }}">
+                <img
+                    src="{{ anime.imagen }}"
+                    alt="{{ anime.titulo }}"
+                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+                >
             </div>
 
             <div class="anime-contenido">
+
                 <h2>{{ anime.titulo_es|default:anime.titulo }}</h2>
 
-                    <p class="anime-desc">
-                        {{ anime.descripcion_es|default:anime.descripcion|truncatechars:220 }}
-                    </p>
+                <p class="anime-desc">
+                    {{ anime.descripcion_es|default:anime.descripcion|truncatechars:220 }}
+                </p>
 
                 <div class="anime-info">
                     <p><strong>Temporada:</strong> {{ anime.temporada }} {{ anime.anio }}</p>
@@ -70,20 +134,20 @@
                     <p class="puntuacion">⭐ {{ anime.puntuacion }}</p>
                 </div>
 
-        
             </div>
 
         </div>
+
     </a>
 
     {% empty %}
     <p>No se ha encontrado el anime.</p>
     {% endfor %}
+
 </section>
 
 <footer>
     <p>© 2026 AnimeTemp - Catálogo de anime por temporada</p>
 </footer>
-
 
 {% endblock %}

@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
+from django.db.models import Avg, Count
 from asgiref.sync import async_to_sync
 from .models import Notificacion
 
@@ -31,13 +32,13 @@ from .models import (
     SeguimientoAnime,
 )
 import os
-
 # ============================================================
 # CONFIGURACIÓN GENERAL DE IMÁGENES POR DEFECTO :D
 # ============================================================
 
 DEFAULT_PROFILE_IMAGE = "/static/img/default-profile.png"
 DEFAULT_PROFILE_BANNER = "/static/img/default-banner.jpg"
+
 
 def sumar_xp(usuario, cantidad):
     perfil, creado = PerfilUsuario.objects.get_or_create(usuario=usuario)
@@ -72,14 +73,12 @@ def sumar_xp(usuario, cantidad):
         "subio_nivel": subio_nivel,
     }
 
+
 def obtener_imagenes_perfil(usuario):
-    DEFAULT_FOTO = "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-    DEFAULT_BANNER = "https://images.unsplash.com/photo-1528164344705-47542687000d"
+    foto_perfil = DEFAULT_PROFILE_IMAGE
+    banner_perfil = DEFAULT_PROFILE_BANNER
 
     perfil = getattr(usuario, "perfilusuario", None)
-
-    foto_perfil = DEFAULT_FOTO
-    banner_perfil = DEFAULT_BANNER
 
     if perfil:
         if perfil.foto_perfil:
@@ -120,13 +119,15 @@ def actualizar_catalogo_render(request):
             "error": str(e)
         }, status=500)
 
+
 def inicio(request):
     busqueda = request.GET.get("buscar")
     temporada = request.GET.get("temporada")
     genero = request.GET.get("genero")
     estado = request.GET.get("estado")
+    orden = request.GET.get("orden", "recientes")
 
-    animes = Anime.objects.all().order_by("-creado_en")
+    animes = Anime.objects.all()
 
     if busqueda:
         animes = animes.filter(titulo__icontains=busqueda)
@@ -140,6 +141,25 @@ def inicio(request):
     if estado:
         animes = animes.filter(estado__iexact=estado)
 
+    if orden == "az":
+        animes = animes.order_by("titulo")
+    elif orden == "za":
+        animes = animes.order_by("-titulo")
+    elif orden == "puntuacion":
+        animes = animes.order_by("-puntuacion", "titulo")
+    else:
+        animes = animes.order_by("-creado_en")
+
+    top_comunidad = (
+        Anime.objects
+        .annotate(
+            promedio_comunidad=Avg("resenas__puntuacion"),
+            total_resenas=Count("resenas")
+        )
+        .filter(total_resenas__gt=0)
+        .order_by("-promedio_comunidad", "-total_resenas", "titulo")[:10]
+    )
+
     return render(
         request,
         "catalogo/inicio.html",
@@ -149,10 +169,10 @@ def inicio(request):
             "temporada_actual": temporada,
             "genero_actual": genero,
             "estado_actual": estado,
+            "orden_actual": orden,
+            "top_comunidad": top_comunidad,
         },
     )
-
-
 # ============================================================
 # REGISTRO DE USUARIOS :D
 # ============================================================
