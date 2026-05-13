@@ -22,22 +22,79 @@
             {{ perfil_usuario.bio|default:"Este usuario todavía no escribió una bio." }}
         </div>
 
-        <div class="perfil-datos">
-            <div>
-                <strong>Género favorito</strong>
-                <p>{{ perfil_usuario.genero_favorito|default:"No definido" }}</p>
-            </div>
+<div class="perfil-social-layout">
 
-            <div>
-                <strong>No recomendar</strong>
-                <p>{{ perfil_usuario.genero_no_recomendado|default:"Ninguno" }}</p>
-            </div>
+    <div class="perfil-datos">
 
-            <div>
-                <strong>Anime favorito</strong>
-                <p>{{ perfil_usuario.anime_favorito|default:"No definido" }}</p>
-            </div>
+        <div>
+            <strong>Género favorito</strong>
+            <p>{{ perfil_usuario.genero_favorito|default:"No definido" }}</p>
         </div>
+
+        <div>
+            <strong>No recomendar</strong>
+            <p>{{ perfil_usuario.genero_no_recomendado|default:"Ninguno" }}</p>
+        </div>
+
+        <div>
+            <strong>Anime favorito</strong>
+            <p>{{ perfil_usuario.anime_favorito|default:"No definido" }}</p>
+        </div>
+
+    </div>
+
+    <div class="perfil-actividad-box">
+
+        <div class="perfil-actividad-header">
+            <h3>🔥 Actividad reciente</h3>
+            <span>Últimos movimientos</span>
+        </div>
+
+        <div class="perfil-actividad-feed">
+
+            {% for actividad in actividad_perfil %}
+
+            <div class="perfil-actividad-item">
+
+                <div class="perfil-actividad-icono">
+                    {% if actividad.tipo == "resena" %}
+                        ⭐
+                    {% elif actividad.tipo == "seguimiento" %}
+                        📺
+                    {% elif actividad.tipo == "favorito" %}
+                        ❤️
+                    {% else %}
+                        🔥
+                    {% endif %}
+                </div>
+
+                <div class="perfil-actividad-info">
+
+                    <p>
+                        {{ actividad.texto }}
+                    </p>
+
+                    <small>
+                        {{ actividad.fecha|timesince }} atrás
+                    </small>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <p class="perfil-actividad-vacio">
+                Este usuario todavía no tiene actividad reciente.
+            </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
 
         <button type="button" class="perfil-toggle-btn" onclick="toggleFavoritosPublicos()">
              ▶ Ver animes favoritos

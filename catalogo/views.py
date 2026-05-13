@@ -5,14 +5,16 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.contrib.auth import login
 from django.views.decorators.http import require_GET
-from django.http import JsonResponse
+from django.http import JsonResponse, request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
-from django.db.models import Avg, Count, Sum
+from django.db.models import Avg, Count, Sum, Q
+from .models import Favorito, SeguimientoAnime
 from asgiref.sync import async_to_sync
 from .models import Notificacion
+from itertools import chain
 
 from .forms import PerfilUsuarioForm, ResenaForm
 from .models import (
@@ -156,15 +158,152 @@ def inicio(request):
             puntos_comunidad=Sum("resenas__puntuacion"),
             promedio_comunidad=Avg("resenas__puntuacion"),
             total_resenas=Count("resenas")
-       )
-    .filter(total_resenas__gt=0)
-    .order_by("-puntos_comunidad", "-promedio_comunidad", "-total_resenas", "titulo")[:10]
+        )
+        .filter(total_resenas__gt=0)
+        .order_by(
+            "-puntos_comunidad",
+            "-promedio_comunidad",
+            "-total_resenas",
+            "titulo"
+        )[:10]
     )
+    
+    # ============================================================
+# TOP POR GÉNERO
+# ============================================================
+
+    top_genero = None
+
+    if genero:
+
+     top_genero = (
+        Anime.objects
+        .filter(genero__icontains=genero)
+        .annotate(
+            puntos_comunidad=Sum("resenas__puntuacion"),
+            promedio_comunidad=Avg("resenas__puntuacion"),
+            total_resenas=Count("resenas")
+        )
+        .filter(total_resenas__gt=0)
+        .order_by(
+            "-puntos_comunidad",
+            "-promedio_comunidad",
+            "-total_resenas",
+            "titulo"
+        )[:10]
+    )
+    
+    # ============================================================
+    # RECOMENDADOS PARA EL USUARIO
+    # ============================================================
+
+    recomendados = []
+
+    if request.user.is_authenticated:
+
+        generos_usuario = set()
+
+        favoritos_usuario = Favorito.objects.filter(
+            usuario=request.user
+        ).select_related("anime")
+
+        for favorito in favoritos_usuario:
+            if favorito.anime.genero:
+                generos_usuario.update(
+                    [g.strip() for g in favorito.anime.genero.split(",") if g.strip()]
+                )
+
+        seguimientos_usuario = SeguimientoAnime.objects.filter(
+            usuario=request.user
+        ).select_related("anime")
+
+        for seguimiento in seguimientos_usuario:
+            if seguimiento.anime.genero:
+                generos_usuario.update(
+                    [g.strip() for g in seguimiento.anime.genero.split(",") if g.strip()]
+                )
+
+        try:
+            perfil = request.user.perfilusuario
+
+            if perfil.genero_favorito:
+                generos_usuario.add(perfil.genero_favorito.strip())
+
+        except Exception:
+            pass
+
+        consulta_generos = Q()
+
+        for genero_item in generos_usuario:
+            consulta_generos |= Q(genero__icontains=genero_item)
+
+        if consulta_generos:
+
+            ids_excluidos = list(
+                favoritos_usuario.values_list("anime_id", flat=True)
+            )
+
+            ids_excluidos += list(
+                seguimientos_usuario.values_list("anime_id", flat=True)
+            )
+
+            recomendados = (
+                Anime.objects
+                .filter(consulta_generos)
+                .exclude(id__in=ids_excluidos)
+                .order_by("-popularidad", "-puntuacion")[:12]
+            )
+
+
+# ============================================================
+# ACTIVIDAD RECIENTE
+# ============================================================
+
+    resenas_recientes = (
+     Resena.objects
+     .select_related("usuario", "anime")
+     .order_by("-fecha")[:10]
+    )
+
+    seguimientos_recientes = (
+    SeguimientoAnime.objects
+    .select_related("usuario", "anime")
+    .order_by("-actualizado_en")[:10]
+    )
+
+    actividad_reciente = sorted(
+    chain(
+        [
+            {
+                "tipo": "resena",
+                "usuario": r.usuario,
+                "anime": r.anime,
+                "texto": f"⭐ reseñó {r.anime.titulo}",
+                "fecha": r.fecha,
+            }
+            for r in resenas_recientes
+        ],
+
+        [
+            {
+                "tipo": "seguimiento",
+                "usuario": s.usuario,
+                "anime": s.anime,
+                "texto": f"📺 comenzó {s.anime.titulo}",
+                "fecha": s.actualizado_en,
+            }
+            for s in seguimientos_recientes
+        ]
+    ),
+    key=lambda x: x["fecha"],
+    reverse=True
+    )[:15]
 
     return render(
         request,
         "catalogo/inicio.html",
         {
+            "top_genero": top_genero,
             "animes": animes,
             "busqueda": busqueda,
             "temporada_actual": temporada,
@@ -172,6 +311,8 @@ def inicio(request):
             "estado_actual": estado,
             "orden_actual": orden,
             "top_comunidad": top_comunidad,
+            "recomendados": recomendados,
+            "actividad_reciente": actividad_reciente,
         },
     )
 # ============================================================
@@ -738,7 +879,70 @@ def editar_perfil(request):
 @login_required
 def perfil_publico(request, usuario_id):
     usuario_perfil = get_object_or_404(User, id=usuario_id)
+    
+    # ============================================================
+    # ACTIVIDAD PERFIL PÚBLICO
+    # ============================================================
 
+    resenas_usuario = (
+        Resena.objects
+        .filter(usuario=usuario_perfil)
+        .select_related("anime")
+        .order_by("-fecha")[:5]
+    )
+
+    seguimientos_usuario = (
+        SeguimientoAnime.objects
+        .filter(usuario=usuario_perfil)
+        .select_related("anime")
+        .order_by("-actualizado_en")[:5]
+    )
+
+    favoritos_usuario = (
+        Favorito.objects
+        .filter(usuario=usuario_perfil)
+        .select_related("anime")
+        .order_by("-id")[:5]
+     )
+
+    actividad_perfil = sorted(
+
+        chain(
+
+            [
+                {
+                    "tipo": "resena",
+                    "texto": f"⭐ reseñó {r.anime.titulo}",
+                    "fecha": r.fecha,
+                }
+                for r in resenas_usuario
+            ],
+
+            [
+               {
+                   "tipo": "seguimiento",
+                   "texto": f"📺 empezó {s.anime.titulo}",
+                   "fecha": s.actualizado_en,
+                }
+                for s in seguimientos_usuario
+            ],
+
+            [
+                {
+                    "tipo": "favorito",
+                    "texto": f"❤️ agregó {f.anime.titulo} a favoritos",
+                    "fecha": timezone.now(),
+                }
+                for f in favoritos_usuario
+            ]
+
+        ),
+
+        key=lambda x: x["fecha"],
+        reverse=True
+
+    )[:8]
+    
     perfil_usuario, creado = PerfilUsuario.objects.get_or_create(
         usuario=usuario_perfil
     )
@@ -754,6 +958,7 @@ def perfil_publico(request, usuario_id):
             "perfil_usuario": perfil_usuario,
             "favoritos": favoritos,
             "favoritos_count": favoritos_count,
+            "actividad_perfil": actividad_perfil,
         },
     )
 

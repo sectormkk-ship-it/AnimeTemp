@@ -55,6 +55,161 @@
 
 </section>
 
+{% if recomendados %}
+
+<section class="recomendados-section">
+
+    <div class="recomendados-header">
+        <h2>✨ Recomendados para vos</h2>
+        <span>Basado en tus gustos y favoritos</span>
+    </div>
+
+    <div class="recomendados-scroll">
+
+        {% for anime in recomendados %}
+
+        <a href="{% url 'detalle_anime' anime.id %}"
+           class="recomendado-card">
+
+            <img
+                src="{{ anime.imagen }}"
+                alt="{{ anime.titulo }}"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+            >
+
+            <div class="recomendado-overlay">
+
+                <h3>
+                    {{ anime.titulo_es|default:anime.titulo }}
+                </h3>
+
+                <p>
+                    {{ anime.genero_es|default:anime.genero }}
+                </p>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
+
+{% if actividad_reciente %}
+
+<section class="actividad-section">
+
+    <div class="actividad-header">
+        <h2>🔥 Actividad reciente</h2>
+        <span>Lo que hace la comunidad ahora</span>
+    </div>
+
+    <div class="actividad-feed">
+
+        {% for actividad in actividad_reciente %}
+
+        <div class="actividad-card">
+
+            <div class="actividad-user">
+
+                {% if actividad.usuario.perfilusuario.foto_perfil %}
+                <img
+                    src="{{ actividad.usuario.perfilusuario.foto_perfil.url }}"
+                    alt="Perfil"
+                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+                >
+                {% else %}
+                <img
+                    src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                    alt="Perfil"
+                >
+                {% endif %}
+
+            </div>
+
+            <div class="actividad-info">
+
+                <strong>
+                    {{ actividad.usuario.username }}
+                </strong>
+
+                <p>
+                    {{ actividad.texto }}
+                </p>
+
+                <small>
+                    {{ actividad.fecha|timesince }} atrás
+                </small>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
+
+{% if top_genero %}
+
+<section class="top-genero-section">
+
+    <div class="top-genero-header">
+        <h2>
+            🔥 Top {{ genero_actual }} de la comunidad
+        </h2>
+
+        <span>
+            Los más apoyados en este género
+        </span>
+    </div>
+
+    <div class="top-genero-scroll">
+
+        {% for anime in top_genero %}
+
+        <a href="{% url 'detalle_anime' anime.id %}"
+           class="top-genero-card">
+
+            <span class="top-genero-rank">
+                #{{ forloop.counter }}
+            </span>
+
+            <img
+                src="{{ anime.imagen }}"
+                alt="{{ anime.titulo }}"
+                onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
+            >
+
+            <div class="top-genero-overlay">
+
+                <h3>
+                    {{ anime.titulo_es|default:anime.titulo }}
+                </h3>
+
+                <p>
+                    🏆 {{ anime.puntos_comunidad }} pts
+                </p>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endif %}
+
 <div class="temporadas">
     <a href="/?temporada=invierno">Invierno</a>
     <a href="/?temporada=primavera">Primavera</a>
