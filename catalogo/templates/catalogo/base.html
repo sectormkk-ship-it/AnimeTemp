@@ -470,30 +470,7 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
     }, 2600);
 }
 
-    function responderSolicitudNexus(solicitudId, accion) {
-        const url = accion === "aceptar" ? "/amistad/aceptar/" + solicitudId + "/" : "/amistad/rechazar/" + solicitudId + "/";
-
-        fetch(url)
-            .then(() => {
-                const solicitud = document.getElementById("solicitud-" + solicitudId);
-                if (solicitud) solicitud.remove();
-
-                const badge = document.getElementById("nexus-friend-request-badge");
-                const totalActual = parseInt(badge?.textContent || "0", 10);
-                actualizarBadgeSolicitudes(Math.max(totalActual - 1, 0));
-
-                const quedanSolicitudes = document.querySelectorAll(".solicitud-nexus").length;
-                const panelDerecho = document.querySelector(".anime-panel-right");
-
-                if (panelDerecho && quedanSolicitudes === 0) {
-                    panelDerecho.innerHTML = `
-                        <h4>Notificaciones</h4>
-                        <div class="anime-panel-note">No tenés notificaciones.</div>
-                    `;
-                }
-            })
-            .catch(() => alert("No se pudo procesar la solicitud."));
-    }
+ function responderSolicitudNexus
 
     function abrirChatNexus(usuarioId, username) {
         nexusChatActualId = String(usuarioId);
