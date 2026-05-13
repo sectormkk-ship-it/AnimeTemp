@@ -99,64 +99,6 @@
 
 {% endif %}
 
-{% if actividad_reciente %}
-
-<section class="actividad-section">
-
-    <div class="actividad-header">
-        <h2>🔥 Actividad reciente</h2>
-        <span>Lo que hace la comunidad ahora</span>
-    </div>
-
-    <div class="actividad-feed">
-
-        {% for actividad in actividad_reciente %}
-
-        <div class="actividad-card">
-
-            <div class="actividad-user">
-
-                {% if actividad.usuario.perfilusuario.foto_perfil %}
-                <img
-                    src="{{ actividad.usuario.perfilusuario.foto_perfil.url }}"
-                    alt="Perfil"
-                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"
-                >
-                {% else %}
-                <img
-                    src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                    alt="Perfil"
-                >
-                {% endif %}
-
-            </div>
-
-            <div class="actividad-info">
-
-                <strong>
-                    {{ actividad.usuario.username }}
-                </strong>
-
-                <p>
-                    {{ actividad.texto }}
-                </p>
-
-                <small>
-                    {{ actividad.fecha|timesince }} atrás
-                </small>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    </div>
-
-</section>
-
-{% endif %}
-
 {% if top_genero %}
 
 <section class="top-genero-section">
