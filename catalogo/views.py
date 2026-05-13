@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from channels.layers import get_channel_layer
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Sum
 from asgiref.sync import async_to_sync
 from .models import Notificacion
 
@@ -153,11 +153,12 @@ def inicio(request):
     top_comunidad = (
         Anime.objects
         .annotate(
+            puntos_comunidad=Sum("resenas__puntuacion"),
             promedio_comunidad=Avg("resenas__puntuacion"),
             total_resenas=Count("resenas")
-        )
-        .filter(total_resenas__gt=0)
-        .order_by("-promedio_comunidad", "-total_resenas", "titulo")[:10]
+       )
+    .filter(total_resenas__gt=0)
+    .order_by("-puntos_comunidad", "-promedio_comunidad", "-total_resenas", "titulo")[:10]
     )
 
     return render(
