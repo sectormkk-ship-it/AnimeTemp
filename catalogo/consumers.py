@@ -154,8 +154,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 # ============================================================
 
 class NotificacionesConsumer(AsyncWebsocketConsumer):
-    
-    
   async def enviar_notificacion(self, event):
     await self.send(text_data=json.dumps({
         "mensaje": event.get("mensaje", ""),
