@@ -167,6 +167,7 @@
                     >
                         {{ item.no_leidos }}
                     </strong>
+                    </div>
                 </button>
                 {% empty %}
                 <div class="anime-panel-note">
@@ -600,6 +601,17 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
         );
     });
 }
+
+                conectarWebSocketNexus(usuarioId);
+            })
+            .catch(error => {
+                console.error("Error cargando mensajes:", error);
+                if (mensajes) {
+                    mensajes.innerHTML = '<p id="nexus-vacio">No se pudieron cargar los mensajes.</p>';
+                }
+                conectarWebSocketNexus(usuarioId);
+            });
+    }
 
     
     function escaparHTMLNexus(valor) {
@@ -1336,6 +1348,42 @@ function renderizarResenasNexus(resenas) {
             </p>
         `;
     }
+}
+
+
+function actualizarCamposSeguimiento() {
+    const estado = document.getElementById("seguimiento-estado")?.value || "";
+    const capitulosBox = document.getElementById("seguimiento-capitulos-box");
+    const motivoBox = document.getElementById("seguimiento-motivo-box");
+
+    if (capitulosBox) {
+        capitulosBox.style.display =
+            estado === "viendo" || estado === "completado" || estado === "pausado"
+                ? "block"
+                : "none";
+    }
+
+    if (motivoBox) {
+        motivoBox.style.display = estado === "abandonado" ? "block" : "none";
+    }
+}
+
+function agregarSolicitudTiempoRealNexus(data) {
+    if (!data) return;
+
+    const mensaje =
+        data.mensaje ||
+        data.usuario ||
+        data.emisor_username ||
+        "Nueva solicitud de amistad";
+
+    agregarNotificacionNexus(
+        mensaje,
+        "amistad",
+        data.solicitud_id || data.id || null
+    );
+
+    mostrarToastNexus("Nueva solicitud de amistad", "amistad");
 }
 
     function cerrarResenasNexus() {
