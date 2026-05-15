@@ -182,15 +182,30 @@
 
             </aside>
 
-            <section class="anime-panel-main">
-                <div class="anime-panel-chat-title" id="nexus-chat-title">
-                    Seleccioná un amigo
-                </div>
+           <div class="anime-panel-chat-title nexus-chat-header">
+               <div class="nexus-chat-header-info">
+                   <div id="nexus-chat-title">
+                       💡 Feedback Global
+                   </div>
 
-                <div class="anime-panel-messages" id="nexus-chat-messages">
-                    <p>Seleccioná un amigo para ver el historial.</p>
-                </div>
+                   <div id="nexus-chat-descripcion" class="nexus-chat-descripcion">
+                       Opiniones, sugerencias y bugs de AnimeTemp
+                  </div>
+              </div>
 
+              <button
+              type="button"
+              id="nexus-cerrar-chat-btn"
+              onclick="volverAFeedbackGlobal()"
+              style="display:none;"
+            >
+              ✕
+            </button>
+        </div>
+
+            <div class="anime-panel-messages" id="nexus-chat-messages">
+                 <p id="nexus-vacio">Cargando Feedback Global...</p>
+            </div>
                 <div id="nexus-typing-indicator" class="nexus-typing" style="display:none;">
                     <span id="nexus-typing-user"></span> está escribiendo...
                 </div>
@@ -278,8 +293,13 @@
     </div>
 
 <script>
+    
+    window.FEEDBACK_GLOBAL_CARGAR_URL = "{% url 'cargar_feedback_global' %}";
+    window.FEEDBACK_GLOBAL_ENVIAR_URL = "{% url 'enviar_feedback_global' %}";
+
     let nexusChatActualId = null;
     let nexusChatActualUsername = null;
+    let nexusModoFeedbackGlobal = true;
     let nexusSocket = null;
     let nexusNotificationSocket = null;
     let nexusTypingTimeout = null;
@@ -580,21 +600,147 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
             "error"
         );
     }
-}
+ }
     
+    function volverAFeedbackGlobal() {
+
+    nexusModoFeedbackGlobal = true;
+
+    nexusChatActualId = null;
+    nexusChatActualUsername = null;
+
+    localStorage.removeItem("nexus_chat_actual_id");
+    localStorage.removeItem("nexus_chat_actual_username");
+
+    cerrarSocketChatActual();
+
+    const titulo = document.getElementById("nexus-chat-title");
+    const descripcion = document.getElementById("nexus-chat-descripcion");
+    const cerrarBtn = document.getElementById("nexus-cerrar-chat-btn");
+    const chatBox = document.getElementById("nexus-chat-messages");
+    if (chatBox) {
+    chatBox.classList.add("feedback-global-activo");
+    }
+    if (titulo) {
+        titulo.innerHTML = "💡 Feedback Global";
+    }
+
+    if (descripcion) {
+        descripcion.innerHTML =
+            "Opiniones, sugerencias y bugs de AnimeTemp";
+    }
+
+    if (cerrarBtn) {
+        cerrarBtn.style.display = "none";
+    }
+
+    cargarFeedbackGlobalNexus();
+  }
+
+    function cargarFeedbackGlobalNexus() {
+
+    const mensajes = document.getElementById("nexus-chat-messages");
+
+    if (!mensajes) return;
+
+    mensajes.innerHTML = `
+        <p id="nexus-vacio">
+            Cargando Feedback Global...
+        </p>
+    `;
+
+    fetch(window.FEEDBACK_GLOBAL_CARGAR_URL)
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            mensajes.innerHTML = "";
+
+            if (!data.mensajes || data.mensajes.length === 0) {
+
+                mensajes.innerHTML = `
+                    <p id="nexus-vacio">
+                        Todavía no hay mensajes en el Feedback Global.
+                    </p>
+                `;
+
+                return;
+            }
+
+            data.mensajes.forEach(msg => {
+
+                const item = document.createElement("div");
+
+                item.className =
+                    msg.es_mio
+                        ? "mensaje-feedback mio"
+                        : "mensaje-feedback";
+
+                item.innerHTML = `
+                    <img
+                        src="${msg.avatar || FOTO_DEFAULT}"
+                        class="foto-chat"
+                        onerror="this.src='${FOTO_DEFAULT}'"
+                    >
+
+                    <div class="burbuja-feedback">
+                        <strong>${msg.username}</strong>
+
+                        <p>${msg.texto}</p>
+
+                        <span>${msg.fecha}</span>
+                    </div>
+                `;
+
+                mensajes.appendChild(item);
+
+            });
+
+            mensajes.scrollTop = mensajes.scrollHeight;
+
+        })
+
+        .catch(error => {
+
+            console.error(error);
+
+            mensajes.innerHTML = `
+                <p id="nexus-vacio">
+                    Error cargando Feedback Global.
+                </p>
+            `;
+        });
+ }
+
     function abrirChatNexus(usuarioId, username) {
+        nexusModoFeedbackGlobal = false;
         nexusChatActualId = String(usuarioId);
         nexusChatActualUsername = username;
         
         localStorage.setItem("nexus_chat_actual_id",usuarioId);
         localStorage.setItem("nexus_chat_actual_username",username);
-
+        
+        const chatBox = document.getElementById("nexus-chat-messages");
+        if (chatBox) {
+        chatBox.classList.remove("feedback-global-activo");
+       }
         const panel = document.getElementById("animePanelWindow");
         const titulo = document.getElementById("nexus-chat-title");
         const mensajes = document.getElementById("nexus-chat-messages");
 
         if (panel && !panel.classList.contains("active")) panel.classList.add("active");
         if (titulo) titulo.textContent = "Chat con " + username;
+        const descripcion = document.getElementById("nexus-chat-descripcion");
+        const cerrarBtn = document.getElementById("nexus-cerrar-chat-btn");
+
+        if (descripcion) {
+            descripcion.innerHTML = "";
+        }
+
+        if (cerrarBtn) {
+            cerrarBtn.style.display = "flex";
+        }
         if (mensajes) mensajes.innerHTML = '<p id="nexus-vacio">Cargando mensajes...</p>';
 
         cerrarSocketChatActual();
@@ -1452,6 +1598,9 @@ function agregarSolicitudTiempoRealNexus(data) {
            ultimoChatId,
            ultimoChatUsername
            );
+         }
+         else {
+               volverAFeedbackGlobal();
          }
     });
 
