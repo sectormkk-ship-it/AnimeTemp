@@ -962,20 +962,6 @@
         border-radius: 12px;
         padding: 12px;
     }
-    .resena-card {
-    background: #1e293b;
-    border: 1px solid rgba(56, 189, 248, 0.15);
-    padding: 20px;
-    border-radius: 16px;
-    margin-bottom: 18px;
-    color: #e5e7eb;
-     }
-
-    .resena-card p,
-    .resena-card span,
-    .resena-card strong {
-    color: inherit;
-    }
     .resena-usuario {
         color: #38bdf8;
         font-weight: bold;
@@ -1869,7 +1855,7 @@ body {
 }
 
 /* =========================
-   PANEL FLOTANTE CHAT - NEXUS PREMIUM
+   PANEL FLOTANTE CHAT - NEXUS insano
 ========================= */
 
 .anime-panel-window {
@@ -2689,7 +2675,7 @@ body {
     text-align: center;
 }
 /* =========================================================
-   FILTROS DE RESEÑAS - PREMIUM
+   FILTROS DE RESEÑAS - insano
 ========================================================= */
 
 .resenas-filtros {
@@ -3289,58 +3275,9 @@ body {
 .spoiler-reportado:hover {
     transform: scale(1.05);
 }
-.respuesta-card strong {
-    color: #38bdf8;
-    display: block;
-    margin-bottom: 6px;
-}
-
-.respuesta-card p {
-    color: #cbd5e1;
-    margin: 0 0 6px;
-    line-height: 1.4;
-}
-
-.respuesta-card span {
-    color: #94a3b8;
-    font-size: 12px;
-}
-.respuesta-form input {
-    flex: 1;
-    background: #020617;
-    color: white;
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 10px;
-    padding: 10px 12px;
-}
-
-.respuesta-form button {
-    background: #38bdf8;
-    color: #020617;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-weight: bold;
-    cursor: pointer;
-}
 
 .respuesta-oculta {
     display: none;
-}
-
-.ver-respuestas-btn {
-    margin-top: 12px;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.22);
-    color: #38bdf8;
-    cursor: pointer;
-    font-weight: bold;
-    padding: 8px 12px;
-    border-radius: 10px;
-}
-
-.ver-respuestas-btn:hover {
-    background: rgba(56, 189, 248, 0.15);
 }
 
 .resena-user-click {
@@ -4060,7 +3997,7 @@ img {
 }
 
 /* =========================================================
-   HERO + TOP 10 COMUNIDAD PREMIUM
+   HERO + TOP 10 COMUNIDAD insano
 ========================================================= */
 
 .hero-con-top {
@@ -4280,7 +4217,7 @@ img {
     border: 1px solid rgba(251,146,60,0.5);
 }
 
-/* TOP 4-6 - AZUL PREMIUM */
+/* TOP 4-6 - AZUL insano */
 
 .hero-top-card:nth-child(4),
 .hero-top-card:nth-child(5),
@@ -4398,7 +4335,7 @@ img {
 }
 
 /* =========================================================
-   RECOMENDADOS PARA VOS - PREMIUM
+   RECOMENDADOS PARA VOS - insano
 ========================================================= */
 
 .recomendados-section {
@@ -4760,7 +4697,7 @@ img {
 }
 
 /* =========================================================
-   TOP POR GÉNERO - PREMIUM
+   TOP POR GÉNERO - insano
 ========================================================= */
 
 .top-genero-section {
@@ -5712,7 +5649,7 @@ img {
 }
 
 /* =========================================================
-   RESPUESTAS DE RESEÑAS - PREMIUM
+   RESPUESTAS DE RESEÑAS - insano
 ========================================================= */
 
 .respuestas-box {
@@ -5829,7 +5766,7 @@ img {
 }
 
 /* =========================================================
-   RESEÑAS PREMIUM
+   RESEÑAS insano
 ========================================================= */
 
 .resena-card {
@@ -6183,5 +6120,332 @@ img {
 
 .ver-respuestas-btn:hover {
     background: rgba(56, 189, 248, 0.18);
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   RESPUESTAS / COMENTARIOS EN RESEÑAS - HILO LIMPIO
+========================================================= */
+
+.respuestas-box {
+    width: 100%;
+    margin: 16px 0 18px;
+    padding: 0 0 0 22px;
+
+    border-left: 2px solid rgba(56, 189, 248, 0.22);
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    animation: respuestasFade 0.25s ease;
+}
+
+.respuesta-card {
+    position: relative;
+
+    background: rgba(2, 6, 23, 0.55);
+
+    border: 1px solid rgba(56, 189, 248, 0.16);
+    border-radius: 16px;
+
+    padding: 14px 16px;
+
+    color: #e2e8f0;
+
+    box-shadow:
+        inset 0 0 12px rgba(0, 0, 0, 0.18),
+        0 6px 18px rgba(0, 0, 0, 0.16);
+
+    transition: 0.2s ease;
+}
+
+.respuesta-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateX(3px);
+}
+
+.respuesta-card strong {
+    display: block;
+    color: #38bdf8;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.respuesta-card p {
+    margin: 0 0 8px;
+    color: #cbd5e1;
+    line-height: 1.55;
+}
+
+.respuesta-card span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.sin-respuestas {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    font-style: italic;
+
+    background: transparent;
+    padding: 4px 0;
+}
+
+.respuesta-form {
+    width: 100%;
+    margin-top: 12px;
+
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+
+    background: rgba(2, 6, 23, 0.48);
+    border: 1px solid rgba(56, 189, 248, 0.14);
+    border-radius: 16px;
+
+    padding: 10px;
+}
+
+.respuesta-form input {
+    width: 100%;
+    background: #020617;
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    border-radius: 12px;
+    color: white;
+    padding: 11px 14px;
+    outline: none;
+}
+
+.respuesta-form input:focus {
+    border-color: rgba(56, 189, 248, 0.75);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.10);
+}
+
+.respuesta-form button {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #020617;
+    border: none;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.respuesta-form button:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+    .respuestas-box {
+        padding-left: 14px;
+    }
+
+    .respuesta-form {
+        grid-template-columns: 1fr;
+    }
+
+    .respuesta-form button {
+        padding: 11px;
+    }
+}
+
+@keyframes respuestasFade {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.resena-card {
+    isolation: isolate;
+}
+
+.resena-card + .resena-card {
+    margin-top: 26px;
+}
+
+/* =========================================================
+   RESPUESTAS insano LIMPIAS
+========================================================= */
+
+.respuestas-container {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-left: 18px;
+    border-left: 2px solid rgba(56, 189, 248, 0.18);
+}
+
+.respuesta-card {
+    background: linear-gradient(
+        145deg,
+        rgba(15, 23, 42, 0.96),
+        rgba(30, 41, 59, 0.92)
+    );
+
+    border: 1px solid rgba(56, 189, 248, 0.14);
+    border-radius: 18px;
+
+    padding: 16px 18px;
+
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.respuesta-card:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba(56, 189, 248, 0.34);
+
+    background: linear-gradient(
+        145deg,
+        rgba(30, 41, 59, 0.98),
+        rgba(15, 23, 42, 0.98)
+    );
+}
+
+.respuesta-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 10px;
+}
+
+.respuesta-avatar {
+    width: 44px;
+    height: 44px;
+
+    border-radius: 50%;
+    object-fit: cover;
+
+    border: 2px solid rgba(56, 189, 248, 0.55);
+
+    flex-shrink: 0;
+}
+
+.respuesta-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.respuesta-user-info strong {
+    color: #38bdf8;
+    font-size: 14px;
+}
+
+.respuesta-user-info span {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.respuesta-texto {
+    color: #e2e8f0;
+
+    line-height: 1.65;
+
+    font-size: 14px;
+
+    word-break: break-word;
+}
+
+.respuesta-form {
+    margin-top: 16px;
+
+    display: flex;
+    gap: 10px;
+}
+
+.respuesta-form input {
+    flex: 1;
+
+    background: #0f172a;
+
+    border: 1px solid rgba(56, 189, 248, 0.22);
+
+    border-radius: 14px;
+
+    padding: 12px 14px;
+
+    color: white;
+
+    outline: none;
+}
+
+.respuesta-form input:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+
+    box-shadow:
+        0 0 0 3px rgba(56, 189, 248, 0.10);
+}
+
+.respuesta-form button {
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #38bdf8
+    );
+
+    color: white;
+
+    border: none;
+
+    border-radius: 14px;
+
+    padding: 0 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.18s ease;
+}
+
+.respuesta-form button:hover {
+    transform: translateY(-1px);
+
+    filter: brightness(1.08);
+}
+
+.ver-respuestas-btn {
+    margin-top: 14px;
+
+    background: transparent;
+
+    border: 1px solid rgba(56, 189, 248, 0.22);
+
+    color: #38bdf8;
+
+    padding: 9px 14px;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    transition: 0.18s ease;
+}
+
+.ver-respuestas-btn:hover {
+    background: rgba(56, 189, 248, 0.10);
+
+    border-color: rgba(56, 189, 248, 0.45);
+
     transform: translateY(-1px);
 }
