@@ -510,7 +510,8 @@
             .catch(() => mostrarToastNexus("No se pudo actualizar el estado de silencio."));
     }
 
-function mostrarToastNexus(mensaje, tipo = "sistema") {
+
+    function mostrarToastNexus(mensaje, tipo = "sistema") {
     const toast = document.createElement("div");
     toast.className = "nexus-toast nexus-toast-" + tipo;
     toast.innerText = mensaje;
@@ -1049,16 +1050,11 @@ function cargarMasMensajesNexus(usuarioId, offset) {
 function enviarMensajeNexus() {
 
     const input = document.getElementById("nexus-message-input");
-
     if (!input) return;
 
     const mensaje = input.value.trim();
-
     if (!mensaje) return;
 
-    // ============================
-    // FEEDBACK GLOBAL
-    // ============================
     if (nexusModoFeedbackGlobal || !nexusChatActualId) {
 
         if (window.nexusEnviandoMensaje) return;
@@ -1103,10 +1099,6 @@ function enviarMensajeNexus() {
         return;
     }
 
-    // ============================
-    // CHAT PRIVADO
-    // ============================
-
     if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) {
 
         alert(
@@ -1114,7 +1106,6 @@ function enviarMensajeNexus() {
         );
 
         conectarWebSocketNexus(nexusChatActualId);
-
         return;
     }
 
@@ -1134,43 +1125,6 @@ function enviarMensajeNexus() {
 
     setTimeout(() => {
         window.nexusEnviandoMensaje = false;
-    }, 350);
-}
-
-    // =====================================================
-    // ANTI DOBLE ENVÍO
-    // =====================================================
-
-    if (window.nexusEnviandoMensaje) return;
-
-    window.nexusEnviandoMensaje = true;
-
-    // =====================================================
-    // ENVIAR MENSAJE
-    // =====================================================
-
-    nexusSocket.send(
-        JSON.stringify({
-            mensaje: mensaje
-        })
-    );
-
-    // =====================================================
-    // LIMPIAR INPUT
-    // =====================================================
-
-    input.value = "";
-
-    ocultarTypingNexus();
-
-    // =====================================================
-    // DESBLOQUEAR ENVÍO
-    // =====================================================
-
-    setTimeout(() => {
-
-        window.nexusEnviandoMensaje = false;
-
     }, 350);
 }
 
