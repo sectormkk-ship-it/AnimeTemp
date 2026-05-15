@@ -6151,3 +6151,37 @@ img {
         filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.8));
     }
 }
+
+.resena-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 16px 0 12px;
+}
+
+.resena-actions + .respuestas-box,
+.resena-actions ~ .respuesta-form {
+    width: 100%;
+}
+
+.respuesta-form {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.ver-respuestas-btn {
+    margin: 10px 0 12px;
+    background: rgba(56, 189, 248, 0.10);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.ver-respuestas-btn:hover {
+    background: rgba(56, 189, 248, 0.18);
+    transform: translateY(-1px);
+}

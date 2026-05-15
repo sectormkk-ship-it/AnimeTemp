@@ -715,10 +715,37 @@ function enviarRespuestaResena(event, resenaId) {
         <p>${data.respuesta.texto}</p>
         <span>${data.respuesta.fecha}</span>
     `;
-
+    actualizarBotonRespuestas(contenedor);
     contenedor.appendChild(nueva);
     input.value = "";
     });
+}
+
+function actualizarBotonRespuestas(box) {
+    const respuestas = box.querySelectorAll(".respuesta-card");
+    if (respuestas.length === 0) return;
+
+    let btn = box.previousElementSibling;
+
+    if (!btn || !btn.classList.contains("ver-respuestas-btn")) {
+        btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ver-respuestas-btn";
+        box.parentElement.insertBefore(btn, box);
+    }
+
+    box.style.display = "none";
+
+    btn.textContent = `💬 Ver ${respuestas.length} respuesta${respuestas.length > 1 ? "s" : ""}`;
+
+    btn.onclick = function () {
+        const abierta = box.style.display === "block";
+        box.style.display = abierta ? "none" : "block";
+
+        btn.textContent = abierta
+            ? `💬 Ver ${respuestas.length} respuesta${respuestas.length > 1 ? "s" : ""}`
+            : "Ver menos respuestas";
+    };
 }
 
 function prepararRespuestasPlegables() {
