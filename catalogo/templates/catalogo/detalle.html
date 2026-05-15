@@ -532,35 +532,32 @@ if (resenaForm) {
                     <span style="color:#94a3b8;">${r.puntuacion}/10</span>
                 </p>
 
-                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <button
-                        type="button"
-                        class="like-btn"
-                        data-resena-id="${r.id}"
-                        onclick="toggleLikeResena(this)"
-                        style="
-                            background:#1e293b;
-                            color:#38bdf8;
-                            border:1px solid rgba(56,189,248,0.25);
-                            border-radius:10px;
-                            padding:8px 14px;
-                            cursor:pointer;
-                            font-weight:bold;
-                        ">
-                        ❤️ <span>${r.likes}</span>
-                    </button>
+                <div class="resena-actions">
 
-                    <button
-                        type="button"
-                        class="spoiler-report-btn"
-                        data-resena-id="${r.id}"
-                        onclick="reportarSpoiler(this)">
-                        🚩 Reportar spoiler
-                    </button>
+              <button
+              type="button"
+              class="resena-action-btn like-btn"
+              data-resena-id="${r.id}"
+              onclick="toggleLikeResena(this)">
+
+              ❤️ <span>${r.likes}</span>
+
+               </button>
+
+               <button
+               type="button"
+               class="resena-action-btn spoiler-report-btn"
+               data-resena-id="${r.id}"
+               onclick="reportarSpoiler(this)">
+
+               🚩 Reportar spoiler
+
+                </button>
+
                 </div>
 
                 <div class="respuestas-box" id="respuestas-${r.id}">
-                    <p class="sin-respuestas">Todavía no hay respuestas.</p>
+                     <p class="sin-respuestas">Todavía no hay respuestas.</p>
                 </div>
 
                 <form class="respuesta-form" onsubmit="enviarRespuestaResena(event, '${r.id}')">
