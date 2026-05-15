@@ -16,6 +16,7 @@ from asgiref.sync import async_to_sync
 from .models import Notificacion
 from itertools import chain
 from django.db.models import Count
+import json
 
 from .forms import PerfilUsuarioForm, ResenaForm
 from .models import (
@@ -33,6 +34,7 @@ from .models import (
     StrikeUsuario,
     Notificacion,
     SeguimientoAnime,
+    MensajeGlobalFeedback,
 )
 import os
 # ============================================================
@@ -1862,3 +1864,74 @@ def importar_catalogo_render(request):
             "error": str(e)
         }, status=500)    
         
+        
+@login_required
+def cargar_feedback_global(request):
+    mensajes = MensajeGlobalFeedback.objects.select_related("usuario").order_by("fecha")[:100]
+
+    data = []
+
+    for mensaje in mensajes:
+        perfil = getattr(mensaje.usuario, "perfilusuario", None)
+
+        avatar_url = None
+        if perfil and perfil.foto_perfil:
+            avatar_url = perfil.foto_perfil.url
+
+        data.append({
+            "id": mensaje.id,
+            "usuario_id": mensaje.usuario.id,
+            "username": mensaje.usuario.username,
+            "texto": mensaje.texto,
+            "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
+            "avatar": avatar_url,
+            "es_mio": mensaje.usuario == request.user,
+        })
+
+    return JsonResponse({
+        "ok": True,
+        "mensajes": data,
+    })
+
+
+@login_required
+def enviar_feedback_global(request):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"ok": False, "error": "JSON inválido"}, status=400)
+
+    texto = data.get("texto", "").strip()
+
+    if not texto:
+        return JsonResponse({"ok": False, "error": "El mensaje está vacío"}, status=400)
+
+    if len(texto) > 1000:
+        return JsonResponse({"ok": False, "error": "El mensaje es demasiado largo"}, status=400)
+
+    mensaje = MensajeGlobalFeedback.objects.create(
+        usuario=request.user,
+        texto=texto,
+    )
+
+    perfil = getattr(request.user, "perfilusuario", None)
+
+    avatar_url = None
+    if perfil and perfil.foto_perfil:
+        avatar_url = perfil.foto_perfil.url
+
+    return JsonResponse({
+        "ok": True,
+        "mensaje": {
+            "id": mensaje.id,
+            "usuario_id": request.user.id,
+            "username": request.user.username,
+            "texto": mensaje.texto,
+            "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
+            "avatar": avatar_url,
+            "es_mio": True,
+        }
+    })        

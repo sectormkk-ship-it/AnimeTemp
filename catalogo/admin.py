@@ -3,6 +3,7 @@ from modeltranslation.admin import TranslationAdmin
 
 from .models import SeguimientoAnime
 from .models import StrikeUsuario
+from .models import MensajeGlobalFeedback
 from .models import Anime, Favorito, Amistad, MensajePrivado
 from .models import ReporteUsuario
 from .models import Notificacion
@@ -56,3 +57,13 @@ class SeguimientoAnimeAdmin(admin.ModelAdmin):
     list_display = ("usuario", "anime", "estado", "capitulos_vistos", "actualizado_en")
     list_filter = ("estado", "actualizado_en")
     search_fields = ("usuario__username", "anime__titulo")    
+    
+@admin.register(MensajeGlobalFeedback)
+class MensajeGlobalFeedbackAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "texto_corto", "fecha")
+    search_fields = ("usuario__username", "texto")
+    list_filter = ("fecha",)
+    ordering = ("-fecha",)
+
+    def texto_corto(self, obj):
+        return obj.texto[:80]    

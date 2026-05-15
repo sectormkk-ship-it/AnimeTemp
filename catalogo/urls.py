@@ -88,122 +88,55 @@ urlpatterns = [
 
     path('chat/<int:usuario_id>/',views.chat_privado,name='chat_privado'),
 
-    path(
-        'mensajes/',
-        views.bandeja_mensajes,
-        name='bandeja_mensajes'
-    ),
+    path('mensajes/',views.bandeja_mensajes,name='bandeja_mensajes'),
 
-    path(
-        'chat/mensajes/<int:usuario_id>/',
-        views.obtener_mensajes,
-        name='obtener_mensajes'
-    ),
+    path('chat/mensajes/<int:usuario_id>/',views.obtener_mensajes,name='obtener_mensajes'),
 
-    path(
-        'chat/enviar/<int:usuario_id>/',
-        views.enviar_mensaje_ajax,
-        name='enviar_mensaje_ajax'
-    ),
-
+    path('chat/enviar/<int:usuario_id>/',views.enviar_mensaje_ajax,name='enviar_mensaje_ajax'),
+    path("feedback-global/cargar/", views.cargar_feedback_global, name="cargar_feedback_global"),
+    path("feedback-global/enviar/", views.enviar_feedback_global, name="enviar_feedback_global"),
     # ============================================================
     # USUARIOS
     # ============================================================
 
-    path(
-        'usuario/bloquear/<int:usuario_id>/',
-        views.bloquear_usuario,
-        name='bloquear_usuario'
-    ),
+    path('usuario/bloquear/<int:usuario_id>/',views.bloquear_usuario,name='bloquear_usuario'),
 
-    path(
-        'usuario/silenciar/<int:usuario_id>/',
-        views.silenciar_usuario,
-        name='silenciar_usuario'
-    ),
+    path('usuario/silenciar/<int:usuario_id>/',views.silenciar_usuario,name='silenciar_usuario'),
 
-    path(
-        'usuario/reportar/<int:usuario_id>/',
-        views.reportar_usuario,
-        name='reportar_usuario'
-    ),
+    path('usuario/reportar/<int:usuario_id>/',views.reportar_usuario,name='reportar_usuario'),
 
     # ============================================================
     # REPORTES
     # ============================================================
 
-    path(
-        'reportar-bug/',
-        views.reportar_bug,
-        name='reportar_bug'
-    ),
+    path('reportar-bug/',views.reportar_bug,name='reportar_bug'),
 
-    path(
-        'admin-reportes/',
-        views.panel_reportes,
-        name='panel_reportes'
-    ),
+    path('admin-reportes/',views.panel_reportes,name='panel_reportes'),
 
-    path(
-        'admin-reportes/usuario/<int:reporte_id>/revisado/',
-        views.marcar_reporte_usuario_revisado,
-        name='marcar_reporte_usuario_revisado'
-    ),
+    path('admin-reportes/usuario/<int:reporte_id>/revisado/',views.marcar_reporte_usuario_revisado,name='marcar_reporte_usuario_revisado'),
 
-    path(
-        'admin-reportes/usuario/<int:usuario_id>/suspender/',
-        views.suspender_usuario_reportado,
-        name='suspender_usuario_reportado'
-    ),
+    path('admin-reportes/usuario/<int:usuario_id>/suspender/',views.suspender_usuario_reportado,name='suspender_usuario_reportado'),
 
-    path(
-        'admin-reportes/usuario/<int:reporte_id>/eliminar/',
-        views.eliminar_reporte_usuario,
-        name='eliminar_reporte_usuario'
-    ),
+    path('admin-reportes/usuario/<int:reporte_id>/eliminar/',views.eliminar_reporte_usuario,name='eliminar_reporte_usuario'),
 
-    path(
-        'admin-reportes/usuario/<int:usuario_id>/strike/',
-        views.dar_strike_usuario,
-        name='dar_strike_usuario'
-    ),
+    path('admin-reportes/usuario/<int:usuario_id>/strike/',views.dar_strike_usuario,name='dar_strike_usuario'),
 
-    path(
-        'admin-reportes/usuario/<int:usuario_id>/quitar-strike/',
-        views.quitar_strike_usuario,
-        name='quitar_strike_usuario'
-    ),
+    path('admin-reportes/usuario/<int:usuario_id>/quitar-strike/',views.quitar_strike_usuario,name='quitar_strike_usuario'),
 
     # ============================================================
     # NOTIFICACIONES
     # ============================================================
 
-    path(
-        'notificaciones/marcar-leidas/',
-        views.marcar_notificaciones_leidas,
-        name='marcar_notificaciones_leidas'
-    ),
+    path('notificaciones/marcar-leidas/',views.marcar_notificaciones_leidas,name='marcar_notificaciones_leidas'),
 
     # ============================================================
     # TOOLS RENDER
     # ============================================================
 
-    path(
-        'admin-tools/actualizar-catalogo/',
-        views.actualizar_catalogo_render,
-        name='actualizar_catalogo_render'
-    ),
+    path('admin-tools/actualizar-catalogo/',views.actualizar_catalogo_render,name='actualizar_catalogo_render'),
 
-    path(
-        'admin-tools/traducir-catalogo/',
-        views.traducir_catalogo_render,
-        name='traducir_catalogo_render'
-    ),
+    path('admin-tools/traducir-catalogo/',views.traducir_catalogo_render,name='traducir_catalogo_render'),
 
-    path(
-        'admin-tools/importar-catalogo/',
-        views.importar_catalogo_render,
-        name='importar_catalogo_render'
-    ),
+    path('admin-tools/importar-catalogo/',views.importar_catalogo_render,name='importar_catalogo_render'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

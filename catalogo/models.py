@@ -317,6 +317,17 @@ class MensajePrivado(models.Model):
         return f"{self.remitente} -> {self.destinatario}"
 
 
+class MensajeGlobalFeedback(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="mensajes_feedback_global")
+    texto = models.TextField(max_length=1000)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["fecha"]
+
+    def __str__(self):
+        return f"{self.usuario.username}: {self.texto[:40]}"
+
 # ============================================================
 # USUARIOS SILENCIADOS
 # ============================================================
