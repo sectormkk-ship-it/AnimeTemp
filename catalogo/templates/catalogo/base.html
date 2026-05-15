@@ -134,6 +134,10 @@
         <div class="anime-panel-body">
             <aside class="anime-panel-sidebar">
                 <h4>Amigos</h4>
+               
+                <a href="{% url 'buscar_usuarios' %}" class="nexus-search-users-btn">
+                 👥 Buscar usuarios
+                  </a>
 
                 {% for item in amigos_nexus %}
                 <button
@@ -175,9 +179,7 @@
                 </div>
                 {% endfor %}
 
-                <hr style="border-color: rgba(56, 189, 248, 0.2);">
 
-                <a href="{% url 'buscar_usuarios' %}">👥 Buscar usuarios</a>
             </aside>
 
             <section class="anime-panel-main">
@@ -312,22 +314,50 @@
     }
 
     function toggleAnimePanel() {
-        const panel = document.getElementById("animePanelWindow");
-        if (!panel) return;
 
-        panel.classList.toggle("active");
+    const panel = document.getElementById("animePanelWindow");
 
-        if (panel.classList.contains("active")) {
-            setTimeout(() => {
-                fetch("/notificaciones/marcar-leidas/")
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.ok) actualizarBadgeSolicitudes(0);
-                    })
-                    .catch(() => console.warn("No se pudieron marcar notificaciones como leídas."));
-            }, 1500);
-        }
+    if (!panel) return;
+
+    panel.classList.toggle("active");
+
+    const abierto = panel.classList.contains("active");
+
+    localStorage.setItem("nexus_panel_abierto", abierto);
+
+    if (abierto) {
+
+        setTimeout(() => {
+
+            fetch("/notificaciones/marcar-leidas/")
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.ok) {
+                        actualizarBadgeSolicitudes(0);
+                    }
+
+                })
+                .catch(() => {
+                    console.warn("No se pudieron marcar notificaciones.");
+                });
+
+        }, 1500);
     }
+  }
+
+   document.addEventListener("DOMContentLoaded", () => {
+
+    const panel = document.getElementById("animePanelWindow");
+
+    if (!panel) return;
+
+    const estabaAbierto = localStorage.getItem("nexus_panel_abierto");
+
+    if (estabaAbierto === "true") {
+        panel.classList.add("active");
+    }
+});
 
     function actualizarBadgeGlobal(total) {
         const badgeGlobal = document.getElementById("nexus-global-badge");

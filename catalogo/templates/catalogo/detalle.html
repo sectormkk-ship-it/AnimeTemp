@@ -133,6 +133,23 @@
         </p>
     {% endif %}
 
+    <div class="resenas-filtros">
+    <a href="?orden=recientes"
+       class="{% if orden_resenas == 'recientes' or not orden_resenas %}activo{% endif %}">
+        🔥 Más recientes
+    </a>
+
+    <a href="?orden=antiguas"
+       class="{% if orden_resenas == 'antiguas' %}activo{% endif %}">
+        ⏳ Más antiguas
+    </a>
+
+    <a href="?orden=populares"
+       class="{% if orden_resenas == 'populares' %}activo{% endif %}">
+        ❤️ Más populares
+    </a>
+    </div>
+
     <div id="resenas-lista" style="margin-top:30px;">
 
         {% for resena in resenas %}
@@ -163,28 +180,27 @@
 
                 {% if resena.contiene_spoiler %}
 
-                    <div class="spoiler-box">
+                <div class="spoiler-box" onclick="toggleSpoiler(this)">
 
-                        <div class="spoiler-warning">
-                            ⚠ Esta reseña contiene spoilers
-                        </div>
+                    <div class="spoiler-warning">
+                        ⚠ Esta reseña contiene spoilers
 
-                        <button
-                            type="button"
-                            class="spoiler-btn"
-                            onclick="toggleSpoiler(this)">
-                            Mostrar reseña
-                        </button>
+                        <span class="spoiler-click-info">
+                        (Click para revelar)
+                         </span>
+                     </div>
 
-                        <div class="spoiler-content" style="display:none;">
-                            <div class="resena-burbuja">
-                                <div class="resena-contenido">
-                                    {{ resena.texto|safe|linebreaksbr }}
-                                </div>
-                            </div>
-                        </div>
+                     <div class="spoiler-content">
 
-                    </div>
+                          <div class="resena-burbuja">
+                              <div class="resena-contenido">
+                                   {{ resena.texto|safe|linebreaksbr }}
+                             </div>
+                         </div>
+
+                  </div>
+
+         </div>
 
                 {% else %}
 
@@ -308,18 +324,12 @@
 </section>
 
 <script>
-function toggleSpoiler(button) {
-    const content = button.parentElement.querySelector(".spoiler-content");
+function toggleSpoiler(spoilerBox) {
+    const content = spoilerBox.querySelector(".spoiler-content");
 
     if (!content) return;
 
-    if (content.style.display === "none") {
-        content.style.display = "block";
-        button.textContent = "Ocultar reseña";
-    } else {
-        content.style.display = "none";
-        button.textContent = "Mostrar reseña";
-    }
+    spoilerBox.classList.toggle("spoiler-open");
 }
 
 function reportarSpoiler(button) {

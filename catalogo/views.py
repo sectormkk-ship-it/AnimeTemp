@@ -15,6 +15,7 @@ from .models import Favorito, SeguimientoAnime
 from asgiref.sync import async_to_sync
 from .models import Notificacion
 from itertools import chain
+from django.db.models import Count
 
 from .forms import PerfilUsuarioForm, ResenaForm
 from .models import (
@@ -536,19 +537,45 @@ def detalle_anime(request, anime_id):
                     },
                 })
 
-            return redirect("detalle_anime", anime_id=anime.id)
+            # =========================
+    # ORDEN DE RESEÑAS
+    # =========================
+
+    orden_resenas = request.GET.get("orden", "recientes")
+
+    resenas = anime.resenas.all()
+
+    if orden_resenas == "antiguas":
+
+        resenas = resenas.order_by("fecha")
+
+    elif orden_resenas == "populares":
+
+        resenas = resenas.annotate(
+            total_likes=Count("likes")
+        ).order_by("-total_likes", "-fecha")
 
     else:
-        form = ResenaForm()
 
-    resenas = anime.resenas.all().order_by("-fecha")
+        orden_resenas = "recientes"
+
+        resenas = resenas.order_by("-fecha")
+
+    # =========================
+    # CONVERTIR EMOJIS
+    # =========================
 
     for resena in resenas:
         resena.texto = convertir_emojis(resena.texto)
 
+    # =========================
+    # FAVORITOS
+    # =========================
+
     es_favorito = False
 
     if request.user.is_authenticated:
+
         es_favorito = Favorito.objects.filter(
             usuario=request.user,
             anime=anime,
@@ -563,8 +590,10 @@ def detalle_anime(request, anime_id):
             "resena_form": form,
             "es_favorito": es_favorito,
             "seguimiento": seguimiento,
+            "orden_resenas": orden_resenas,
         },
     )
+
 @login_required
 @require_POST
 def like_resena(request, resena_id):
