@@ -6623,3 +6623,168 @@ img {
     transform: translateY(-2px);
     filter: brightness(1.08);
 }
+
+/* ===============================
+   FEEDBACK GLOBAL - CHAT ESPECIAL
+================================ */
+.feedback-global-activo {
+    position: relative;
+    background:
+        linear-gradient(
+            rgba(8, 10, 25, 0.82),
+            rgba(8, 10, 25, 0.92)
+        ),
+        url("/static/img/feedback-bg.png");
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 80, 140, 0.35);
+    box-shadow:
+        inset 0 0 30px rgba(255, 60, 130, 0.12),
+        0 0 18px rgba(255, 60, 130, 0.15);
+}
+
+.feedback-global-activo::before {
+    content: "AnimeTemp Feedback";
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: block;
+    margin: -8px -8px 10px -8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #ffd6e6;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 45, 120, 0.35),
+        rgba(120, 70, 255, 0.25)
+    );
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.feedback-global-activo .mensaje-feedback {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+    animation: feedbackFadeIn 0.25s ease;
+}
+
+.feedback-global-activo .mensaje-feedback.mio {
+    flex-direction: row-reverse;
+}
+
+.feedback-global-activo .mensaje-feedback .foto-chat {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 90, 160, 0.65);
+    box-shadow: 0 0 12px rgba(255, 60, 140, 0.35);
+}
+
+.feedback-global-activo .burbuja-feedback {
+    max-width: 78%;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(18, 20, 42, 0.82);
+    color: #f8f8ff;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(6px);
+}
+
+.feedback-global-activo .mensaje-feedback.mio .burbuja-feedback {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 45, 120, 0.88),
+        rgba(120, 55, 220, 0.88)
+    );
+}
+
+.feedback-global-activo .burbuja-feedback strong {
+    display: block;
+    font-size: 12px;
+    color: #ffb8d4;
+    margin-bottom: 4px;
+}
+
+.feedback-global-activo .mensaje-feedback.mio .burbuja-feedback strong {
+    color: #fff;
+}
+
+.feedback-global-activo .burbuja-feedback p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.feedback-global-activo .burbuja-feedback span {
+    display: block;
+    margin-top: 5px;
+    font-size: 10px;
+    opacity: 0.65;
+    text-align: right;
+}
+
+.feedback-global-activo #nexus-vacio {
+    margin: 25px auto;
+    padding: 14px;
+    max-width: 85%;
+    text-align: center;
+    color: #ffe3ef;
+    background: rgba(20, 20, 40, 0.72);
+    border: 1px solid rgba(255, 80, 150, 0.28);
+    border-radius: 16px;
+    backdrop-filter: blur(6px);
+}
+
+@keyframes feedbackFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nexus-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.nexus-chat-header-info {
+    min-width: 0;
+}
+
+.nexus-chat-descripcion {
+    font-size: 12px;
+    color: #7dd3fc;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+#nexus-cerrar-chat-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    background: rgba(15, 23, 42, 0.95);
+    color: #e2e8f0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+#nexus-cerrar-chat-btn:hover {
+    color: white;
+    background: rgba(239, 68, 68, 0.9);
+}
