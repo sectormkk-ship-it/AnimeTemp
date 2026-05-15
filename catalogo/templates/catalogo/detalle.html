@@ -718,6 +718,8 @@ function enviarRespuestaResena(event, resenaId) {
     actualizarBotonRespuestas(contenedor);
     contenedor.appendChild(nueva);
     input.value = "";
+    contenedor.dataset.visibles = 5;
+    inicializarHiloRespuestas(contenedor);
     });
 }
 
@@ -750,30 +752,52 @@ function actualizarBotonRespuestas(box) {
 
 function prepararRespuestasPlegables() {
     document.querySelectorAll(".respuestas-box").forEach(box => {
-        const respuestas = box.querySelectorAll(".respuesta-card");
-
-        if (respuestas.length === 0) return;
-
-        box.style.display = "none";
-
-        const btn = document.createElement("button");
-
-        btn.type = "button";
-        btn.className = "ver-respuestas-btn";
-        btn.textContent = `💬 Ver ${respuestas.length} respuesta${respuestas.length > 1 ? "s" : ""}`;
-
-        btn.addEventListener("click", function () {
-            const abierta = box.style.display === "block";
-
-            box.style.display = abierta ? "none" : "block";
-
-            btn.textContent = abierta
-                ? `💬 Ver ${respuestas.length} respuesta${respuestas.length > 1 ? "s" : ""}`
-                : "Ver menos respuestas";
-        });
-
-        box.parentElement.insertBefore(btn, box);
+        inicializarHiloRespuestas(box);
     });
+}
+
+function inicializarHiloRespuestas(box) {
+    const respuestas = Array.from(box.querySelectorAll(".respuesta-card"));
+    const sinRespuestas = box.querySelector(".sin-respuestas");
+
+    if (respuestas.length === 0) {
+        if (sinRespuestas) sinRespuestas.style.display = "block";
+        return;
+    }
+
+    if (sinRespuestas) sinRespuestas.remove();
+
+    box.style.display = "flex";
+
+    let visibles = Number(box.dataset.visibles || 5);
+    visibles = Math.min(visibles, respuestas.length);
+
+    respuestas.forEach((respuesta, index) => {
+        respuesta.style.display = index < visibles ? "block" : "none";
+    });
+
+    let btn = box.querySelector(".ver-mas-respuestas-btn");
+
+    if (respuestas.length > visibles) {
+        if (!btn) {
+            btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "ver-mas-respuestas-btn";
+            box.appendChild(btn);
+        }
+
+        const restantes = respuestas.length - visibles;
+        btn.textContent = `Ver ${Math.min(5, restantes)} respuestas más`;
+
+        btn.onclick = function () {
+            box.dataset.visibles = visibles + 5;
+            inicializarHiloRespuestas(box);
+        };
+
+        btn.style.display = "inline-flex";
+    } else if (btn) {
+        btn.style.display = "none";
+    }
 }
 
 document.addEventListener("DOMContentLoaded", prepararRespuestasPlegables);
