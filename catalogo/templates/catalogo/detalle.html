@@ -212,42 +212,35 @@
 
                 {% endif %}
 
-                <p class="resena-puntuacion">
+                <p class="resena-puntuacion {% if resena.puntuacion >= 8 %}rating-alto{% elif resena.puntuacion >= 5 %}rating-medio{% else %}rating-bajo{% endif %}">
                     {% for i in "1234567890"|make_list %}
                         {% if forloop.counter <= resena.puntuacion %}
-                            ⭐
+                            <span class="star-fill">⭐</span>
                         {% else %}
-                            ☆
+                            <span class="star-empty">☆</span>
                         {% endif %}
                     {% endfor %}
 
-                    <span style="color:#94a3b8;">
-                        {{ resena.puntuacion }}/10
+                    <span class="rating-numero">
+                          {{ resena.puntuacion }}/10
                     </span>
                 </p>
 
                 <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
 
+<div class="resena-actions">
+
     <button
         type="button"
-        class="like-btn"
+        class="resena-action-btn like-btn"
         data-resena-id="{{ resena.id }}"
-        onclick="toggleLikeResena(this)"
-        style="
-            background:#1e293b;
-            color:#38bdf8;
-            border:1px solid rgba(56,189,248,0.25);
-            border-radius:10px;
-            padding:8px 14px;
-            cursor:pointer;
-            font-weight:bold;
-        ">
+        onclick="toggleLikeResena(this)">
         ❤️ <span>{{ resena.likes.count }}</span>
     </button>
 
     <button
         type="button"
-        class="spoiler-report-btn"
+        class="resena-action-btn spoiler-report-btn"
         data-resena-id="{{ resena.id }}"
         onclick="reportarSpoiler(this)">
         🚩 Reportar spoiler
@@ -255,37 +248,19 @@
 
     {% if user == resena.usuario %}
 
-    <button
-        type="button"
-        class="editar-resena-btn"
-        onclick="editarResena('{{ resena.id }}')"
-        style="
-            background:#2563eb;
-            color:white;
-            border:none;
-            border-radius:10px;
-            padding:8px 14px;
-            cursor:pointer;
-            font-weight:bold;
-        ">
-        ✏ Editar
-    </button>
+        <button
+            type="button"
+            class="resena-action-btn editar-resena-btn"
+            onclick="editarResena('{{ resena.id }}')">
+            ✏ Editar
+        </button>
 
-    <button
-        type="button"
-        class="eliminar-resena-btn"
-        onclick="eliminarResena('{{ resena.id }}')"
-        style="
-            background:#dc2626;
-            color:white;
-            border:none;
-            border-radius:10px;
-            padding:8px 14px;
-            cursor:pointer;
-            font-weight:bold;
-        ">
-        🗑 Eliminar
-    </button>
+        <button
+            type="button"
+            class="resena-action-btn eliminar-resena-btn"
+            onclick="eliminarResena('{{ resena.id }}')">
+            🗑 Eliminar
+        </button>
 
     {% endif %}
 
