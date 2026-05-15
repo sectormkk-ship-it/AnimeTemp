@@ -226,7 +226,7 @@
                     </span>
                 </p>
 
-                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                
 
 <div class="resena-actions">
 
@@ -479,21 +479,27 @@ if (resenaForm) {
                 ${
                     r.contiene_spoiler
                     ? `
-                        <div class="spoiler-box">
-                            <div class="spoiler-warning">
-                                ⚠ Esta reseña contiene spoilers
-                            </div>
+                <div class="spoiler-box" onclick="toggleSpoiler(this)">
 
-                            <button type="button" class="spoiler-btn" onclick="toggleSpoiler(this)">
-                                Mostrar reseña
-                            </button>
+                <div class="spoiler-warning">
+                 ⚠ Esta reseña contiene spoilers
 
-                            <div class="spoiler-content" style="display:none;">
-                                <div class="resena-burbuja">
-                                    <div class="resena-contenido">${r.texto}</div>
-                                </div>
-                            </div>
-                        </div>
+                <span class="spoiler-click-info">
+                       (Click para revelar)
+                </span>
+                    </div>
+
+    <div class="spoiler-content">
+
+        <div class="resena-burbuja">
+            <div class="resena-contenido">
+                ${r.texto}
+            </div>
+        </div>
+
+    </div>
+
+</div>
                     `
                     : `
                         <div class="resena-burbuja">
@@ -715,11 +721,9 @@ function enviarRespuestaResena(event, resenaId) {
         <p>${data.respuesta.texto}</p>
         <span>${data.respuesta.fecha}</span>
     `;
-    actualizarBotonRespuestas(contenedor);
-    contenedor.appendChild(nueva);
+        contenedor.appendChild(nueva);
+        actualizarBotonRespuestas(contenedor);
     input.value = "";
-    contenedor.dataset.visibles = 5;
-    inicializarHiloRespuestas(contenedor);
     });
 }
 
@@ -752,55 +756,75 @@ function actualizarBotonRespuestas(box) {
 
 function prepararRespuestasPlegables() {
     document.querySelectorAll(".respuestas-box").forEach(box => {
-        inicializarHiloRespuestas(box);
+        const respuestas = box.querySelectorAll(".respuesta-card");
+
+        if (respuestas.length === 0) return;
+
+        box.style.display = "none";
+
+        const btn = document.createElement("button");
+
+        btn.type = "button";
+        btn.className = "ver-respuestas-btn";
+        btn.textContent = `💬 Ver ${respuestas.length} respuesta${respuestas.length > 1 ? "s" : ""}`;
+
+        btn.addEventListener("click", function () {
+            const abierta = box.style.display === "block";
+
+            box.style.display = abierta ? "none" : "block";
+
+            btn.textContent = abierta
+                ? `💬 Ver ${respuestas.length} respuesta${respuestas.length > 1 ? "s" : ""}`
+                : "Ver menos respuestas";
+        });
+
+        box.parentElement.insertBefore(btn, box);
     });
 }
 
-function inicializarHiloRespuestas(box) {
-    const respuestas = Array.from(box.querySelectorAll(".respuesta-card"));
-    const sinRespuestas = box.querySelector(".sin-respuestas");
+function prepararResenasPaginadas() {
+    const lista = document.getElementById("resenas-lista");
+    if (!lista) return;
 
-    if (respuestas.length === 0) {
-        if (sinRespuestas) sinRespuestas.style.display = "block";
-        return;
-    }
+    const resenas = Array.from(lista.querySelectorAll(".resena-card"));
+    const cantidadPorClick = 5;
 
-    if (sinRespuestas) sinRespuestas.remove();
+    if (resenas.length <= cantidadPorClick) return;
 
-    box.style.display = "flex";
+    let visibles = cantidadPorClick;
 
-    let visibles = Number(box.dataset.visibles || 5);
-    visibles = Math.min(visibles, respuestas.length);
-
-    respuestas.forEach((respuesta, index) => {
-        respuesta.style.display = index < visibles ? "block" : "none";
+    resenas.forEach((resena, index) => {
+        resena.style.display = index < visibles ? "block" : "none";
     });
 
-    let btn = box.querySelector(".ver-mas-respuestas-btn");
+    let boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "ver-mas-resenas-btn";
+    boton.textContent = `Ver más reseñas (${resenas.length - visibles})`;
 
-    if (respuestas.length > visibles) {
-        if (!btn) {
-            btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "ver-mas-respuestas-btn";
-            box.appendChild(btn);
+    boton.addEventListener("click", function () {
+        visibles += cantidadPorClick;
+
+        resenas.forEach((resena, index) => {
+            resena.style.display = index < visibles ? "block" : "none";
+        });
+
+        const restantes = resenas.length - visibles;
+
+        if (restantes > 0) {
+            boton.textContent = `Ver más reseñas (${restantes})`;
+        } else {
+            boton.remove();
         }
+    });
 
-        const restantes = respuestas.length - visibles;
-        btn.textContent = `Ver ${Math.min(5, restantes)} respuestas más`;
-
-        btn.onclick = function () {
-            box.dataset.visibles = visibles + 5;
-            inicializarHiloRespuestas(box);
-        };
-
-        btn.style.display = "inline-flex";
-    } else if (btn) {
-        btn.style.display = "none";
-    }
+    lista.after(boton);
 }
 
-document.addEventListener("DOMContentLoaded", prepararRespuestasPlegables);
+document.addEventListener("DOMContentLoaded", function () {
+    prepararRespuestasPlegables();
+    prepararResenasPaginadas();
+});
 
 function abrirResenasDesdeResena(usuarioId) {
     nexusMenuUsuarioId = usuarioId;

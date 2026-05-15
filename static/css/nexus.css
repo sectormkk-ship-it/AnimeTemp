@@ -6534,12 +6534,6 @@ img {
     transition: 0.18s ease;
 }
 
-.ver-mas-respuestas-btn:hover {
-    background: rgba(56, 189, 248, 0.10);
-    border-color: rgba(56, 189, 248, 0.45);
-    transform: translateY(-1px);
-}
-
 .sin-respuestas {
     margin: 0;
     color: #64748b;
@@ -6557,4 +6551,75 @@ img {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* =========================================================
+   SEPARACIÓN ENTRE RESEÑAS
+========================================================= */
+
+#resenas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+.resena-card {
+    position: relative;
+    width: 100%;
+    isolation: isolate;
+
+    margin-bottom: 0 !important;
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.28),
+        0 0 0 1px rgba(56, 189, 248, 0.08);
+}
+
+.resena-card::after {
+    content: "";
+
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: -18px;
+
+    height: 1px;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(56, 189, 248, 0.18),
+        transparent
+    );
+
+    pointer-events: none;
+}
+
+.resena-card:last-child::after {
+    display: none;
+}
+
+.resena-card:hover {
+    z-index: 2;
+}
+
+.ver-mas-resenas-btn {
+    display: block;
+    margin: 26px auto 0;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #020617;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 22px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+    box-shadow: 0 8px 22px rgba(56, 189, 248, 0.22);
+}
+
+.ver-mas-resenas-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
 }
