@@ -639,6 +639,36 @@ function mostrarToastNexus(mensaje, tipo = "sistema") {
     cargarFeedbackGlobalNexus();
   }
 
+function agregarMensajeFeedbackGlobal(msg) {
+
+    const mensajes = document.getElementById("nexus-chat-messages");
+
+    if (!mensajes || !msg) return;
+
+    const item = document.createElement("div");
+
+    item.className = msg.es_mio
+        ? "mensaje-feedback mio"
+        : "mensaje-feedback";
+
+    item.innerHTML = `
+        <img
+            src="${msg.avatar || FOTO_DEFAULT}"
+            class="foto-chat"
+            onerror="this.src='${FOTO_DEFAULT}'"
+        >
+
+        <div class="burbuja-feedback">
+            <strong>${escaparHTMLNexus(msg.username)}</strong>
+            <p>${escaparHTMLNexus(msg.texto)}</p>
+            <span>${escaparHTMLNexus(msg.fecha)}</span>
+        </div>
+    `;
+
+    mensajes.appendChild(item);
+    mensajes.scrollTop = mensajes.scrollHeight;
+}
+
     function cargarFeedbackGlobalNexus() {
 
     const mensajes = document.getElementById("nexus-chat-messages");
@@ -1016,9 +1046,7 @@ function cargarMasMensajesNexus(usuarioId, offset) {
     }
 
     
-    
-
-     function enviarMensajeNexus() {
+function enviarMensajeNexus() {
 
     const input = document.getElementById("nexus-message-input");
 
@@ -1026,12 +1054,58 @@ function cargarMasMensajesNexus(usuarioId, offset) {
 
     const mensaje = input.value.trim();
 
-    if (!nexusChatActualId) {
-        alert("Primero seleccioná un amigo.");
+    if (!mensaje) return;
+
+    // ============================
+    // FEEDBACK GLOBAL
+    // ============================
+    if (nexusModoFeedbackGlobal || !nexusChatActualId) {
+
+        if (window.nexusEnviandoMensaje) return;
+        window.nexusEnviandoMensaje = true;
+
+        fetch(window.FEEDBACK_GLOBAL_ENVIAR_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({
+                texto: mensaje
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            if (!data.ok) {
+                mostrarToastNexus(data.error || "No se pudo enviar el feedback.");
+                return;
+            }
+
+            input.value = "";
+
+            const vacio = document.getElementById("nexus-vacio");
+            if (vacio) vacio.remove();
+
+            agregarMensajeFeedbackGlobal(data.mensaje);
+        })
+        .catch(error => {
+            console.error(error);
+            mostrarToastNexus("Error enviando feedback.");
+        })
+        .finally(() => {
+            setTimeout(() => {
+                window.nexusEnviandoMensaje = false;
+            }, 350);
+        });
+
         return;
     }
 
-    if (!mensaje) return;
+    // ============================
+    // CHAT PRIVADO
+    // ============================
 
     if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) {
 
@@ -1043,6 +1117,25 @@ function cargarMasMensajesNexus(usuarioId, offset) {
 
         return;
     }
+
+    if (window.nexusEnviandoMensaje) return;
+
+    window.nexusEnviandoMensaje = true;
+
+    nexusSocket.send(
+        JSON.stringify({
+            mensaje: mensaje
+        })
+    );
+
+    input.value = "";
+
+    ocultarTypingNexus();
+
+    setTimeout(() => {
+        window.nexusEnviandoMensaje = false;
+    }, 350);
+}
 
     // =====================================================
     // ANTI DOBLE ENVÍO
