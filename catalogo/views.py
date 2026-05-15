@@ -537,45 +537,42 @@ def detalle_anime(request, anime_id):
                     },
                 })
 
-            # =========================
+            return redirect("detalle_anime", anime_id=anime.id)
+
+    else:
+        form = ResenaForm()
+
+    # =========================
     # ORDEN DE RESEÑAS
     # =========================
-
     orden_resenas = request.GET.get("orden", "recientes")
 
     resenas = anime.resenas.all()
 
     if orden_resenas == "antiguas":
-
         resenas = resenas.order_by("fecha")
 
     elif orden_resenas == "populares":
-
         resenas = resenas.annotate(
             total_likes=Count("likes")
         ).order_by("-total_likes", "-fecha")
 
     else:
-
         orden_resenas = "recientes"
-
         resenas = resenas.order_by("-fecha")
 
     # =========================
     # CONVERTIR EMOJIS
     # =========================
-
     for resena in resenas:
         resena.texto = convertir_emojis(resena.texto)
 
     # =========================
     # FAVORITOS
     # =========================
-
     es_favorito = False
 
     if request.user.is_authenticated:
-
         es_favorito = Favorito.objects.filter(
             usuario=request.user,
             anime=anime,
