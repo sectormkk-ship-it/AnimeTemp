@@ -368,7 +368,7 @@
         }, 1500);
     }
   }
-¡¡¡¡
+
    document.addEventListener("DOMContentLoaded", () => {
 
     const panel = document.getElementById("animePanelWindow");
@@ -1047,7 +1047,7 @@ function cargarMasMensajesNexus(usuarioId, offset) {
     
     }
     
-    function conectarFeedbackGlobalNexus() {
+  function conectarFeedbackGlobalNexus() {
 
     if (nexusFeedbackSocket && nexusFeedbackSocket.readyState === WebSocket.OPEN) {
         return;
@@ -1066,7 +1066,7 @@ function cargarMasMensajesNexus(usuarioId, offset) {
         try {
             data = JSON.parse(e.data);
         } catch (error) {
-            console.error("Feedback WebSocket inválido:", e.data);
+            console.error("Feedback WebSocket invalido:", e.data);
             return;
         }
 
@@ -1088,11 +1088,11 @@ function cargarMasMensajesNexus(usuarioId, offset) {
     nexusFeedbackSocket.onclose = function () {
         console.log("Feedback WebSocket cerrado");
 
-        setTimeout(() => {
+        setTimeout(function () {
             conectarFeedbackGlobalNexus();
         }, 2000);
     };
-  }
+ }
 
     
 
