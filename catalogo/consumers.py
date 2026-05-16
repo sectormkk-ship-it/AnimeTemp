@@ -2,6 +2,7 @@ import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from .models import MensajeGlobalFeedback
 from django.contrib.auth.models import User
 
 from .models import MensajePrivado
@@ -148,30 +149,90 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         return "/static/img/default-profile.png"
 
+# ========================================================
+# FEDBACACK GLOBAL EN TIEMPO REAL - NEXUS
+# ========================================================
 
+class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+
+        self.room_group_name = "feedback_global"
+
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+
+        data = json.loads(text_data)
+
+        mensaje = data.get("mensaje", "").strip()
+
+        if not mensaje:
+            return
+
+        mensaje_obj = await self.guardar_mensaje(
+            self.scope["user"],
+            mensaje
+        )
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "feedback_message",
+                "mensaje": mensaje_obj
+            }
+        )
+
+    async def feedback_message(self, event):
+
+        await self.send(text_data=json.dumps({
+            "type": "feedback",
+            "mensaje": event["mensaje"]
+        }))
+
+    @database_sync_to_async
+    def guardar_mensaje(self, usuario, texto):
+
+        mensaje = MensajeGlobalFeedback.objects.create(
+            usuario=usuario,
+            texto=texto
+        )
+
+        perfil = getattr(usuario, "perfilusuario", None)
+
+        avatar = None
+
+        if perfil and perfil.foto_perfil:
+            avatar = perfil.foto_perfil.url
+
+        return {
+            "id": mensaje.id,
+            "username": usuario.username,
+            "texto": mensaje.texto,
+            "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
+            "avatar": avatar,
+            "es_mio": False
+        }
 # ============================================================
 # NOTIFICACIONES EN TIEMPO REAL - NEXUS
 # ============================================================
 
 class NotificacionesConsumer(AsyncWebsocketConsumer):
-  async def enviar_notificacion(self, event):
-    await self.send(text_data=json.dumps({
-        "mensaje": event.get("mensaje", ""),
-        "tipo": event.get("tipo", "sistema"),
-        "total": event.get("total", 0),
-        "solicitud_id": event.get("solicitud_id"),
-        "accion": event.get("accion"),
-
-        "emisor_id": event.get("emisor_id"),
-        "emisor_username": event.get("emisor_username"),
-        "emisor_foto": event.get("emisor_foto"),
-
-        "amigo_id": event.get("amigo_id"),
-        "amigo_username": event.get("amigo_username"),
-        "amigo_foto": event.get("amigo_foto"),
-    }))
 
     async def connect(self):
+
         self.usuario = self.scope["user"]
 
         if self.usuario.is_anonymous:
@@ -188,8 +249,28 @@ class NotificacionesConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
+
         if hasattr(self, "group_name"):
+
             await self.channel_layer.group_discard(
                 self.group_name,
                 self.channel_name
             )
+
+    async def enviar_notificacion(self, event):
+
+        await self.send(text_data=json.dumps({
+            "mensaje": event.get("mensaje", ""),
+            "tipo": event.get("tipo", "sistema"),
+            "total": event.get("total", 0),
+            "solicitud_id": event.get("solicitud_id"),
+            "accion": event.get("accion"),
+
+            "emisor_id": event.get("emisor_id"),
+            "emisor_username": event.get("emisor_username"),
+            "emisor_foto": event.get("emisor_foto"),
+
+            "amigo_id": event.get("amigo_id"),
+            "amigo_username": event.get("amigo_username"),
+            "amigo_foto": event.get("amigo_foto"),
+        }))

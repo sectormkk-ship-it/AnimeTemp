@@ -303,6 +303,7 @@
     let nexusChatActualUsername = null;
     let nexusModoFeedbackGlobal = true;
     let nexusSocket = null;
+    let nexusFeedbackSocket = null;
     let nexusNotificationSocket = null;
     let nexusTypingTimeout = null;
     let nexusMenuUsuarioId = null;
@@ -367,7 +368,7 @@
         }, 1500);
     }
   }
-
+¡¡¡¡
    document.addEventListener("DOMContentLoaded", () => {
 
     const panel = document.getElementById("animePanelWindow");
@@ -1045,9 +1046,57 @@ function cargarMasMensajesNexus(usuarioId, offset) {
      
     
     }
+    
+    function conectarFeedbackGlobalNexus() {
+
+    if (nexusFeedbackSocket && nexusFeedbackSocket.readyState === WebSocket.OPEN) {
+        return;
+    }
+
+    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
+    nexusFeedbackSocket = new WebSocket(
+        protocol + window.location.host + "/ws/feedback-global/"
+    );
+
+    nexusFeedbackSocket.onmessage = function (e) {
+
+        let data;
+
+        try {
+            data = JSON.parse(e.data);
+        } catch (error) {
+            console.error("Feedback WebSocket inválido:", e.data);
+            return;
+        }
+
+        if (data.type !== "feedback" || !data.mensaje) return;
+
+        const msg = data.mensaje;
+
+        agregarMensajeFeedbackGlobal(msg);
+
+        if (!msg.es_mio) {
+            reproducirSonidoNotificacionNexus();
+        }
+    };
+
+    nexusFeedbackSocket.onerror = function (error) {
+        console.error("Error en Feedback WebSocket:", error);
+    };
+
+    nexusFeedbackSocket.onclose = function () {
+        console.log("Feedback WebSocket cerrado");
+
+        setTimeout(() => {
+            conectarFeedbackGlobalNexus();
+        }, 2000);
+    };
+  }
 
     
-function enviarMensajeNexus() {
+
+    function enviarMensajeNexus() {
 
     const input = document.getElementById("nexus-message-input");
     if (!input) return;
@@ -1055,50 +1104,45 @@ function enviarMensajeNexus() {
     const mensaje = input.value.trim();
     if (!mensaje) return;
 
+    // ============================
+    // FEEDBACK GLOBAL EN TIEMPO REAL
+    // ============================
     if (nexusModoFeedbackGlobal || !nexusChatActualId) {
 
         if (window.nexusEnviandoMensaje) return;
         window.nexusEnviandoMensaje = true;
 
-        fetch(window.FEEDBACK_GLOBAL_ENVIAR_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken(),
-                "X-Requested-With": "XMLHttpRequest"
-            },
-            body: JSON.stringify({
-                texto: mensaje
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
+        if (!nexusFeedbackSocket || nexusFeedbackSocket.readyState !== WebSocket.OPEN) {
 
-            if (!data.ok) {
-                mostrarToastNexus(data.error || "No se pudo enviar el feedback.");
-                return;
-            }
+            mostrarToastNexus("El Feedback Global todavía no está conectado.");
 
-            input.value = "";
+            conectarFeedbackGlobalNexus();
 
-            const vacio = document.getElementById("nexus-vacio");
-            if (vacio) vacio.remove();
-
-            agregarMensajeFeedbackGlobal(data.mensaje);
-        })
-        .catch(error => {
-            console.error(error);
-            mostrarToastNexus("Error enviando feedback.");
-        })
-        .finally(() => {
             setTimeout(() => {
                 window.nexusEnviandoMensaje = false;
             }, 350);
-        });
+
+            return;
+        }
+
+        nexusFeedbackSocket.send(
+            JSON.stringify({
+                mensaje: mensaje
+            })
+        );
+
+        input.value = "";
+
+        setTimeout(() => {
+            window.nexusEnviandoMensaje = false;
+        }, 350);
 
         return;
     }
 
+    // ============================
+    // CHAT PRIVADO
+    // ============================
     if (!nexusSocket || nexusSocket.readyState !== WebSocket.OPEN) {
 
         alert(
@@ -1106,6 +1150,7 @@ function enviarMensajeNexus() {
         );
 
         conectarWebSocketNexus(nexusChatActualId);
+
         return;
     }
 
@@ -1633,6 +1678,7 @@ function agregarSolicitudTiempoRealNexus(data) {
         }
 
         conectarNotificacionesNexus();
+        conectarFeedbackGlobalNexus();
           const ultimoChatId = localStorage.getItem(
                "nexus_chat_actual_id"
      );

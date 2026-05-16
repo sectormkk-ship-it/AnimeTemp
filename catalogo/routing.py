@@ -1,10 +1,20 @@
 from django.urls import re_path
-from .consumers import ChatConsumer, NotificacionesConsumer
+
+from .consumers import (
+    ChatConsumer,
+    NotificacionesConsumer,
+    FeedbackGlobalConsumer,
+)
 
 websocket_urlpatterns = [
-    # CHAT (lo que ya tenías)
-    re_path(r"ws/chat/(?P<usuario_id>\d+)/$", ChatConsumer.as_asgi()),
 
-    # 🔔 NOTIFICACIONES NUEVAS
-    re_path(r"ws/notificaciones/$", NotificacionesConsumer.as_asgi()),
+    # CHAT PRIVADO
+    re_path(r"ws/chat/(?P<usuario_id>\d+)/$",ChatConsumer.as_asgi()),
+
+    # FEEDBACK GLOBAL
+    re_path(r"ws/feedback-global/$",FeedbackGlobalConsumer.as_asgi()),
+
+    # NOTIFICACIONES
+    re_path(r"ws/notificaciones/$",NotificacionesConsumer.as_asgi()),
+
 ]
