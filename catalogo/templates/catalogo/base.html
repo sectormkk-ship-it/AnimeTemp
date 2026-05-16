@@ -179,6 +179,13 @@
                 </div>
                 {% endfor %}
 
+            </div>
+
+            <div id="nexus-tab-online" class="nexus-tab-panel">
+                <div class="anime-panel-note">
+                    Conectando usuarios...
+                </div>
+            </div>
 
             </aside>
 
@@ -192,6 +199,10 @@
 
                    <div id="nexus-chat-descripcion" class="nexus-chat-descripcion">
                        Opiniones, sugerencias y bugs de AnimeTemp
+                  </div>
+
+                  <div id="nexus-feedback-online" class="nexus-feedback-online">
+                        🌍 Conectando...
                   </div>
               </div>
 
@@ -232,7 +243,18 @@
             </section>
 
             <aside class="anime-panel-right">
-                <h4>Notificaciones</h4>
+
+                <div class="nexus-right-tabs">
+                   <button type="button" class="nexus-right-tab active" onclick="mostrarTabNexus('notificaciones')">
+                       🔔 Notificaciones
+                   </button>
+
+                   <button type="button" class="nexus-right-tab" onclick="mostrarTabNexus('online')">
+                      🌍 En línea
+                  </button>
+                </div>
+
+                <div id="nexus-tab-notificaciones" class="nexus-tab-panel active">
 
                {% if notificaciones_nexus %}
 
@@ -367,6 +389,80 @@
 
         }, 1500);
     }
+  }
+
+   function mostrarTabNexus(tab) {
+
+    const botones = document.querySelectorAll(".nexus-right-tab");
+    const paneles = document.querySelectorAll(".nexus-tab-panel");
+
+    botones.forEach(btn => btn.classList.remove("active"));
+    paneles.forEach(panel => panel.classList.remove("active"));
+
+    if (tab === "notificaciones") {
+        document.querySelector(".nexus-right-tab:nth-child(1)")?.classList.add("active");
+        document.getElementById("nexus-tab-notificaciones")?.classList.add("active");
+    }
+
+    if (tab === "online") {
+        document.querySelector(".nexus-right-tab:nth-child(2)")?.classList.add("active");
+        document.getElementById("nexus-tab-online")?.classList.add("active");
+    }
+  }
+   
+    function renderizarUsuariosOnlineNexus(data) {
+
+    const panel = document.getElementById("nexus-tab-online");
+
+    if (!panel) return;
+
+    const usuarios = data.usuarios || [];
+    const total = data.total || usuarios.length;
+
+    if (usuarios.length === 0) {
+        panel.innerHTML = `
+            <div class="anime-panel-note">
+                No hay usuarios conectados.
+            </div>
+        `;
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="anime-panel-note">
+            🌍 ${total} usuario${total === 1 ? "" : "s"} conectado${total === 1 ? "" : "s"}
+        </div>
+    `;
+
+    usuarios.forEach(usuario => {
+
+        const item = document.createElement("div");
+        item.className = usuario.es_creador
+            ? "nexus-online-user nexus-online-creator"
+            : "nexus-online-user";
+
+        item.innerHTML = `
+            <img
+                src="${usuario.avatar || FOTO_DEFAULT}"
+                onerror="this.src='${FOTO_DEFAULT}'"
+            >
+
+            <div>
+                ${usuario.es_creador ? `
+                    <span class="nexus-creator-title">CREADOR</span>
+                ` : `
+                    <span>En línea</span>
+                `}
+
+                <strong>
+                    ${usuario.es_creador ? "👑 " : ""}
+                    ${escaparHTMLNexus(usuario.username)}
+                </strong>
+            </div>
+        `;
+
+        panel.appendChild(item);
+    });
   }
 
    document.addEventListener("DOMContentLoaded", () => {
@@ -661,7 +757,20 @@ function agregarMensajeFeedbackGlobal(msg) {
         >
 
         <div class="burbuja-feedback">
-            <strong>${escaparHTMLNexus(msg.username)}</strong>
+            <strong class="${msg.es_creador ? 'nexus-creator-user' : ''}">
+
+                ${msg.es_creador ? `
+                    <span class="nexus-creator-title">
+                        CREADOR
+                    </span>
+                ` : ''}
+
+                <span class="nexus-creator-name">
+                    ${msg.es_creador ? '👑 ' : ''}
+                    ${escaparHTMLNexus(msg.username)}
+                </span>
+
+            </strong> 
             <p>${escaparHTMLNexus(msg.texto)}</p>
             <span>${escaparHTMLNexus(msg.fecha)}</span>
         </div>
@@ -719,7 +828,20 @@ function agregarMensajeFeedbackGlobal(msg) {
                     >
 
                     <div class="burbuja-feedback">
-                        <strong>${msg.username}</strong>
+                        <strong class="${msg.es_creador ? 'nexus-creator-user' : ''}">
+
+                            ${msg.es_creador ? `
+                                <span class="nexus-creator-title">
+                                    CREADOR
+                                </span>
+                            ` : ''}
+
+                            <span class="nexus-creator-name">
+                            ${msg.es_creador ? '👑 ' : ''}
+                            ${escaparHTMLNexus(msg.username)}
+                         </span>
+
+                        </strong>
 
                         <p>${msg.texto}</p>
 
@@ -1070,11 +1192,16 @@ function cargarMasMensajesNexus(usuarioId, offset) {
             return;
         }
 
-        if (data.type !== "feedback" || !data.mensaje) return;
+    if (data.type === "online") {
+        renderizarUsuariosOnlineNexus(data);
+        return;
+    }
 
-        const msg = data.mensaje;
+    if (data.type !== "feedback" || !data.mensaje) return;
 
-        agregarMensajeFeedbackGlobal(msg);
+    const msg = data.mensaje;
+
+    agregarMensajeFeedbackGlobal(msg);
 
         if (!msg.es_mio) {
             reproducirSonidoNotificacionNexus();

@@ -155,7 +155,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
 
+    usuarios_online = {}
+
     async def connect(self):
+
+        self.usuario = self.scope["user"]
+
+        if self.usuario.is_anonymous:
+            await self.close()
+            return
 
         self.room_group_name = "feedback_global"
 
@@ -164,26 +172,43 @@ class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        FeedbackGlobalConsumer.usuarios_online[self.channel_name] = await self.obtener_usuario_online(
+            self.usuario
+        )
+
         await self.accept()
 
+        await self.enviar_lista_online()
+
     async def disconnect(self, close_code):
+
+        if self.channel_name in FeedbackGlobalConsumer.usuarios_online:
+            del FeedbackGlobalConsumer.usuarios_online[self.channel_name]
 
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
+        await self.enviar_lista_online()
+
     async def receive(self, text_data):
 
-        data = json.loads(text_data)
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
 
         mensaje = data.get("mensaje", "").strip()
 
         if not mensaje:
             return
 
+        if len(mensaje) > 1000:
+            mensaje = mensaje[:1000]
+
         mensaje_obj = await self.guardar_mensaje(
-            self.scope["user"],
+            self.usuario,
             mensaje
         )
 
@@ -197,10 +222,57 @@ class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
 
     async def feedback_message(self, event):
 
+        mensaje = event["mensaje"]
+
+        mensaje["es_mio"] = mensaje.get("usuario_id") == self.usuario.id
+
         await self.send(text_data=json.dumps({
             "type": "feedback",
-            "mensaje": event["mensaje"]
+            "mensaje": mensaje
         }))
+
+    async def feedback_online(self, event):
+
+        await self.send(text_data=json.dumps({
+            "type": "online",
+            "total": event["total"],
+            "usuarios": event["usuarios"]
+        }))
+
+    async def enviar_lista_online(self):
+
+        usuarios_unicos = {}
+
+        for usuario in FeedbackGlobalConsumer.usuarios_online.values():
+            usuarios_unicos[usuario["id"]] = usuario
+
+        usuarios = list(usuarios_unicos.values())
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "feedback_online",
+                "total": len(usuarios),
+                "usuarios": usuarios
+            }
+        )
+
+    @database_sync_to_async
+    def obtener_usuario_online(self, usuario):
+
+        perfil = getattr(usuario, "perfilusuario", None)
+
+        avatar = None
+
+        if perfil and perfil.foto_perfil:
+            avatar = perfil.foto_perfil.url
+
+        return {
+            "id": usuario.id,
+            "username": usuario.username,
+            "avatar": avatar,
+            "es_creador": usuario.is_staff or usuario.is_superuser,
+        }
 
     @database_sync_to_async
     def guardar_mensaje(self, usuario, texto):
@@ -219,10 +291,12 @@ class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
 
         return {
             "id": mensaje.id,
+            "usuario_id": usuario.id,
             "username": usuario.username,
             "texto": mensaje.texto,
             "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
             "avatar": avatar,
+            "es_creador": usuario.is_staff or usuario.is_superuser,
             "es_mio": False
         }
 # ============================================================

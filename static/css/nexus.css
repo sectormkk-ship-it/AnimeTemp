@@ -6788,3 +6788,205 @@ img {
     color: white;
     background: rgba(239, 68, 68, 0.9);
 }
+
+/* =========================
+   NEXUS RIGHT TABS
+========================= */
+
+.nexus-right-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.nexus-right-tab {
+    position: relative;
+    overflow: hidden;
+
+    flex: 1;
+
+    padding: 9px 8px;
+
+    border-radius: 12px;
+
+    border: 1px solid rgba(56, 189, 248, 0.18);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15, 23, 42, 0.96),
+            rgba(10, 15, 28, 0.96)
+        );
+
+    color: #94a3b8;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+/* BRILLO INTERNO */
+.nexus-right-tab::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            120deg,
+            transparent,
+            rgba(255,255,255,0.08),
+            transparent
+        );
+
+    transform: translateX(-120%);
+    transition: transform 0.45s ease;
+}
+
+/* HOVER */
+.nexus-right-tab:hover {
+
+    transform: translateY(-2px);
+
+    color: #e2e8f0;
+
+    border-color: rgba(56, 189, 248, 0.4);
+
+    box-shadow:
+        0 0 14px rgba(56, 189, 248, 0.14),
+        inset 0 0 18px rgba(56, 189, 248, 0.05);
+}
+
+.nexus-right-tab:hover::before {
+    transform: translateX(120%);
+}
+
+/* ACTIVO */
+.nexus-right-tab.active {
+
+    color: white;
+
+    border-color: rgba(96, 165, 250, 0.65);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(59, 130, 246, 0.92),
+            rgba(37, 99, 235, 0.92)
+        );
+
+    box-shadow:
+        0 0 18px rgba(59, 130, 246, 0.32),
+        inset 0 0 12px rgba(255,255,255,0.08);
+
+    transform: translateY(-1px);
+}
+
+/* CLICK */
+.nexus-right-tab:active {
+    transform: scale(0.96);
+}
+
+/* PANEL ANIMADO */
+.nexus-tab-panel {
+    display: none;
+    animation: nexusFadeTab 0.22s ease;
+}
+
+.nexus-tab-panel.active {
+    display: block;
+}
+
+/* ANIMACIÓN */
+@keyframes nexusFadeTab {
+
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   BADGE CREADOR NEXUS
+========================= */
+
+.nexus-creator-user {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+/* TEXTO SUPERIOR */
+.nexus-creator-title {
+
+    position: relative;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 2px;
+
+    color: rgba(255, 215, 100, 0.72);
+
+    text-shadow:
+        0 0 8px rgba(255, 210, 80, 0.45);
+
+    animation: nexusCreatorGlow 2.2s ease-in-out infinite;
+}
+
+/* NOMBRE */
+.nexus-creator-name {
+
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    color: #fff4c2;
+
+    text-shadow:
+        0 0 10px rgba(255, 210, 80, 0.32);
+}
+
+/* GLOW DORADO */
+@keyframes nexusCreatorGlow {
+
+    0% {
+        opacity: 0.65;
+        transform: translateY(0px);
+        text-shadow:
+            0 0 5px rgba(255, 210, 80, 0.25);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-1px);
+        text-shadow:
+            0 0 14px rgba(255, 210, 80, 0.65);
+    }
+
+    100% {
+        opacity: 0.65;
+        transform: translateY(0px);
+        text-shadow:
+            0 0 5px rgba(255, 210, 80, 0.25);
+    }
+}
