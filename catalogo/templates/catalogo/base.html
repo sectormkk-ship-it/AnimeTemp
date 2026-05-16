@@ -177,15 +177,7 @@
                 <div class="anime-panel-note">
                     Todavía no tenés amigos.
                 </div>
-                {% endfor %}
-
-            </div>
-
-            <div id="nexus-tab-online" class="nexus-tab-panel">
-                <div class="anime-panel-note">
-                    Conectando usuarios...
-                </div>
-            </div>
+                {% endif %}
 
             </aside>
 
@@ -199,10 +191,6 @@
 
                    <div id="nexus-chat-descripcion" class="nexus-chat-descripcion">
                        Opiniones, sugerencias y bugs de AnimeTemp
-                  </div>
-
-                  <div id="nexus-feedback-online" class="nexus-feedback-online">
-                        🌍 Conectando...
                   </div>
               </div>
 
@@ -300,6 +288,14 @@
     <div class="anime-panel-note">No tenés notificaciones.</div>
 
 {% endif %}
+
+      </div>
+
+                <div id="nexus-tab-online" class="nexus-tab-panel">
+                    <div class="anime-panel-note">
+                        Conectando usuarios...
+                    </div>
+                </div>
             </aside>
         </div>
     </div>
@@ -1438,7 +1434,7 @@ function agregarAmigoTiempoRealNexus(data) {
 }
 
 function agregarNotificacionNexus(mensaje, tipo = "sistema", solicitudId = null) {
-    const panel = document.querySelector(".anime-panel-right");
+    const panel = document.getElementById("nexus-tab-notificaciones");
     if (!panel) return;
 
     const vacia = panel.querySelector(".anime-panel-note");
@@ -1831,18 +1827,6 @@ function reproducirSonidoNotificacionNexus() {
     sonido.volume = 0.35;
     sonido.play().catch(() => {});
 }
-
-function toggleNexusMenu(button) {
-    const group = button.parentElement;
-    const content = group.querySelector(".nexus-menu-content");
-    const arrow = button.querySelector(".nexus-menu-arrow");
-
-    if (!content || !arrow) return;
-
-    content.classList.toggle("open");
-    arrow.textContent = content.classList.contains("open") ? "▼" : "▶";
-}
-
 
 function toggleNexusMenu(button) {
     const group = button.parentElement;
