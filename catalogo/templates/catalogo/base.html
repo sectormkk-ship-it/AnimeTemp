@@ -303,7 +303,6 @@
     <div id="nexus-reviews-container"></div>
 
     <div id="nexus-context-menu" class="nexus-context-menu">
-        <button type="button" onclick="borrarMensajeDesdeMenuNexus()">🗑 Borrar mensaje</button>
         <button type="button" onclick="verPerfilNexus()">👤 Ver perfil</button>
         <button type="button" onclick="abrirResenasNexus(); return false;">📝 Ver reseñas</button>
         <button type="button" onclick="silenciarUsuarioNexus()">🔕 Silenciar</button>
@@ -313,6 +312,12 @@
         <button type="button" onclick="enviarSolicitudNexus()">➕ Agregar amigo</button>  
     </div>
 
+
+    <div id="nexus-message-context-menu" class="nexus-context-menu" style="display:none;">
+    <button type="button" onclick="borrarMensajeDesdeMenuNexus()">
+        🗑 Borrar mensaje
+    </button>
+</div>
 <script>
     
     window.FEEDBACK_GLOBAL_CARGAR_URL = "{% url 'cargar_feedback_global' %}";
@@ -464,19 +469,6 @@
         panel.appendChild(item);
     });
   }
-
-   document.addEventListener("DOMContentLoaded", () => {
-
-    const panel = document.getElementById("animePanelWindow");
-
-    if (!panel) return;
-
-    const estabaAbierto = localStorage.getItem("nexus_panel_abierto");
-
-    if (estabaAbierto === "true") {
-        panel.classList.add("active");
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
 
     // TODO tu código actual...
@@ -813,33 +805,39 @@ function agregarMensajeFeedbackGlobal(msg) {
     `;
 
     fetch(window.FEEDBACK_GLOBAL_CARGAR_URL)
-
         .then(response => response.json())
-
         .then(data => {
 
             mensajes.innerHTML = "";
 
             if (!data.mensajes || data.mensajes.length === 0) {
-
                 mensajes.innerHTML = `
                     <p id="nexus-vacio">
                         Todavía no hay mensajes en el Feedback Global.
                     </p>
                 `;
-
                 return;
             }
 
-          data.mensajes.forEach(msg => {
+            data.mensajes.forEach(msg => {
+                const item = crearMensajeFeedbackGlobalElemento(msg);
+                mensajes.appendChild(item);
+            });
 
-          const item = crearMensajeFeedbackGlobalElemento(msg);
+            mensajes.scrollTop = mensajes.scrollHeight;
 
-          mensajes.appendChild(item);
+        })
+        .catch(error => {
 
+            console.error(error);
+
+            mensajes.innerHTML = `
+                <p id="nexus-vacio">
+                    Error cargando Feedback Global.
+                </p>
+            `;
         });
-
-         mensajes.scrollTop = mensajes.scrollHeight;
+}
 
     function abrirChatNexus(usuarioId, username) {
         nexusModoFeedbackGlobal = false;
