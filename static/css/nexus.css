@@ -7176,3 +7176,20 @@ img {
         opacity 0.25s ease,
         transform 0.25s ease;
 }
+
+#nexus-message-context-menu {
+    min-width: 190px;
+}
+
+#nexus-message-context-menu button {
+    color: #fecaca;
+}
+
+#nexus-message-context-menu button:hover {
+    background: rgba(239, 68, 68, 0.16);
+    color: #ffffff;
+}
+
+.mensaje-feedback {
+    cursor: context-menu;
+}

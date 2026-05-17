@@ -303,6 +303,7 @@
     <div id="nexus-reviews-container"></div>
 
     <div id="nexus-context-menu" class="nexus-context-menu">
+        <button type="button" onclick="borrarMensajeDesdeMenuNexus()">🗑 Borrar mensaje</button>
         <button type="button" onclick="verPerfilNexus()">👤 Ver perfil</button>
         <button type="button" onclick="abrirResenasNexus(); return false;">📝 Ver reseñas</button>
         <button type="button" onclick="silenciarUsuarioNexus()">🔕 Silenciar</button>
@@ -328,6 +329,8 @@
     let nexusMenuUsuarioId = null;
     let nexusMenuUsername = null;
     let nexusCerrandoSocketManual = false;
+    let nexusMensajeContextId = null;
+    let nexusMensajeContextElemento = null;
 
     const FOTO_DEFAULT = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -473,6 +476,14 @@
     if (estabaAbierto === "true") {
         panel.classList.add("active");
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+    // TODO tu código actual...
+
+    document.addEventListener("click", function() {
+        ocultarMenuMensajeNexus();
+    });
 });
 
     function actualizarBadgeGlobal(total) {
@@ -734,17 +745,19 @@
     cargarFeedbackGlobalNexus();
   }
 
-function agregarMensajeFeedbackGlobal(msg) {
-
-    const mensajes = document.getElementById("nexus-chat-messages");
-
-    if (!mensajes || !msg) return;
-
+function crearMensajeFeedbackGlobalElemento(msg) {
     const item = document.createElement("div");
 
     item.className = msg.es_mio
         ? "mensaje-feedback mio"
         : "mensaje-feedback";
+
+    item.dataset.mensajeId = msg.id || "";
+    item.dataset.puedeBorrar = msg.es_mio || msg.puede_borrar ? "1" : "0";
+
+    item.oncontextmenu = function(event) {
+        mostrarMenuMensajeNexus(event, item);
+    };
 
     item.innerHTML = `
         <img
@@ -754,36 +767,34 @@ function agregarMensajeFeedbackGlobal(msg) {
         >
 
         <div class="burbuja-feedback">
-
-            ${msg.es_mio || msg.puede_borrar ? `
-                 <button
-                     type="button"
-                     class="feedback-delete-btn"
-                     onclick="eliminarMensajeFeedbackGlobal(${msg.id}, this)"
-                     title="Eliminar mensaje"
-                >
-                    🗑
-                </button>
-            ` : ''}
-
             <strong class="${msg.es_creador ? 'nexus-creator-user' : ''}">
-
                 ${msg.es_creador ? `
-                    <span class="nexus-creator-title">
-                        CREADOR
-                    </span>
+                    <span class="nexus-creator-title">CREADOR</span>
                 ` : ''}
 
                 <span class="nexus-creator-name">
                     ${msg.es_creador ? '👑 ' : ''}
                     ${escaparHTMLNexus(msg.username)}
                 </span>
+            </strong>
 
-            </strong> 
             <p>${escaparHTMLNexus(msg.texto)}</p>
             <span>${escaparHTMLNexus(msg.fecha)}</span>
         </div>
     `;
+
+    return item;
+}
+
+function agregarMensajeFeedbackGlobal(msg) {
+    const mensajes = document.getElementById("nexus-chat-messages");
+
+    if (!mensajes || !msg) return;
+
+    const vacio = document.getElementById("nexus-vacio");
+    if (vacio) vacio.remove();
+
+    const item = crearMensajeFeedbackGlobalElemento(msg);
 
     mensajes.appendChild(item);
     mensajes.scrollTop = mensajes.scrollHeight;
@@ -820,63 +831,15 @@ function agregarMensajeFeedbackGlobal(msg) {
                 return;
             }
 
-            data.mensajes.forEach(msg => {
+          data.mensajes.forEach(msg => {
 
-                const item = document.createElement("div");
+          const item = crearMensajeFeedbackGlobalElemento(msg);
 
-                item.className =
-                    msg.es_mio
-                        ? "mensaje-feedback mio"
-                        : "mensaje-feedback";
+          mensajes.appendChild(item);
 
-                item.innerHTML = `
-                    <img
-                        src="${msg.avatar || FOTO_DEFAULT}"
-                        class="foto-chat"
-                        onerror="this.src='${FOTO_DEFAULT}'"
-                    >
-
-                    <div class="burbuja-feedback">
-                        <strong class="${msg.es_creador ? 'nexus-creator-user' : ''}">
-
-                            ${msg.es_creador ? `
-                                <span class="nexus-creator-title">
-                                    CREADOR
-                                </span>
-                            ` : ''}
-
-                            <span class="nexus-creator-name">
-                            ${msg.es_creador ? '👑 ' : ''}
-                            ${escaparHTMLNexus(msg.username)}
-                         </span>
-
-                        </strong>
-
-                        <p>${msg.texto}</p>
-
-                        <span>${msg.fecha}</span>
-                    </div>
-                `;
-
-                mensajes.appendChild(item);
-
-            });
-
-            mensajes.scrollTop = mensajes.scrollHeight;
-
-        })
-
-        .catch(error => {
-
-            console.error(error);
-
-            mensajes.innerHTML = `
-                <p id="nexus-vacio">
-                    Error cargando Feedback Global.
-                </p>
-            `;
         });
- }
+
+         mensajes.scrollTop = mensajes.scrollHeight;
 
     function abrirChatNexus(usuarioId, username) {
         nexusModoFeedbackGlobal = false;
@@ -1834,48 +1797,73 @@ function agregarSolicitudTiempoRealNexus(data) {
                volverAFeedbackGlobal();
          }
     });
+  
+  function mostrarMenuMensajeNexus(event, mensajeElemento) {
+    event.preventDefault();
 
-  function eliminarMensajeFeedbackGlobal(mensajeId, boton) {
+    const menu = document.getElementById("nexus-message-context-menu");
+    if (!menu || !mensajeElemento) return;
 
+    const puedeBorrar = mensajeElemento.dataset.puedeBorrar === "1";
+    const mensajeId = mensajeElemento.dataset.mensajeId;
+
+    if (!puedeBorrar || !mensajeId) return;
+
+    nexusMensajeContextId = mensajeId;
+    nexusMensajeContextElemento = mensajeElemento;
+
+    menu.style.display = "block";
+    menu.style.left = event.clientX + "px";
+    menu.style.top = event.clientY + "px";
+}
+
+function ocultarMenuMensajeNexus() {
+    const menu = document.getElementById("nexus-message-context-menu");
+    if (menu) menu.style.display = "none";
+}
+
+function borrarMensajeDesdeMenuNexus() {
+    if (!nexusMensajeContextId || !nexusMensajeContextElemento) return;
+
+    eliminarMensajeFeedbackGlobal(
+        nexusMensajeContextId,
+        nexusMensajeContextElemento
+    );
+
+    ocultarMenuMensajeNexus();
+}
+
+  function eliminarMensajeFeedbackGlobal(mensajeId, mensajeElemento) {
     if (!confirm("¿Eliminar este mensaje?")) {
         return;
     }
 
-    fetch(
-        `${window.FEEDBACK_GLOBAL_ELIMINAR_BASE_URL}${mensajeId}/`,
-        {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCSRFToken(),
-                "X-Requested-With": "XMLHttpRequest"
-            }
+    fetch(`${window.FEEDBACK_GLOBAL_ELIMINAR_BASE_URL}${mensajeId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "X-Requested-With": "XMLHttpRequest"
         }
-    )
+    })
     .then(response => response.json())
     .then(data => {
-
         if (!data.ok) {
-            mostrarToastNexus(
-                data.error || "No se pudo eliminar."
-            );
+            mostrarToastNexus(data.error || "No se pudo eliminar.");
             return;
         }
 
-        const mensaje = boton.closest(".mensaje-feedback");
+        if (!mensajeElemento) return;
 
-        if (!mensaje) return;
-
-        mensaje.classList.add("feedback-deleting");
+        mensajeElemento.classList.add("feedback-deleting");
 
         setTimeout(() => {
-            mensaje.remove();
+            mensajeElemento.remove();
         }, 250);
-
     })
     .catch(() => {
         mostrarToastNexus("Error eliminando mensaje.");
     });
- }
+}
 
 function reproducirSonidoNotificacionNexus() {
     const sonido = new Audio("/static/sounds/notificacion.mp3");
