@@ -90,6 +90,8 @@ urlpatterns = [
 
     path('mensajes/',views.bandeja_mensajes,name='bandeja_mensajes'),
 
+    path("feedback-global/eliminar/<int:mensaje_id>/",views.eliminar_feedback_global,name="eliminar_feedback_global"),
+
     path('chat/mensajes/<int:usuario_id>/',views.obtener_mensajes,name='obtener_mensajes'),
 
     path('chat/enviar/<int:usuario_id>/',views.enviar_mensaje_ajax,name='enviar_mensaje_ajax'),

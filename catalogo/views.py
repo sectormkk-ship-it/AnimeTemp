@@ -1935,3 +1935,34 @@ def enviar_feedback_global(request):
             "es_mio": True,
         }
     })        
+    
+@login_required
+@require_POST
+def eliminar_feedback_global(request, mensaje_id):
+
+    try:
+        mensaje = MensajeGlobalFeedback.objects.get(id=mensaje_id)
+    except MensajeGlobalFeedback.DoesNotExist:
+        return JsonResponse({
+            "ok": False,
+            "error": "El mensaje no existe."
+        }, status=404)
+
+    puede_borrar = (
+        mensaje.usuario == request.user
+        or request.user.is_staff
+        or request.user.is_superuser
+    )
+
+    if not puede_borrar:
+        return JsonResponse({
+            "ok": False,
+            "error": "No tenés permiso para borrar este mensaje."
+        }, status=403)
+
+    mensaje.delete()
+
+    return JsonResponse({
+        "ok": True,
+        "mensaje_id": mensaje_id
+    })    

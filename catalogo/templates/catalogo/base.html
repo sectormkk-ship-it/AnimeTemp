@@ -316,6 +316,7 @@
     
     window.FEEDBACK_GLOBAL_CARGAR_URL = "{% url 'cargar_feedback_global' %}";
     window.FEEDBACK_GLOBAL_ENVIAR_URL = "{% url 'enviar_feedback_global' %}";
+    window.FEEDBACK_GLOBAL_ELIMINAR_BASE_URL = "/feedback-global/eliminar/";
 
     let nexusChatActualId = null;
     let nexusChatActualUsername = null;
@@ -753,6 +754,18 @@ function agregarMensajeFeedbackGlobal(msg) {
         >
 
         <div class="burbuja-feedback">
+
+            ${msg.es_mio || msg.puede_borrar ? `
+                 <button
+                     type="button"
+                     class="feedback-delete-btn"
+                     onclick="eliminarMensajeFeedbackGlobal(${msg.id}, this)"
+                     title="Eliminar mensaje"
+                >
+                    🗑
+                </button>
+            ` : ''}
+
             <strong class="${msg.es_creador ? 'nexus-creator-user' : ''}">
 
                 ${msg.es_creador ? `
@@ -1821,6 +1834,48 @@ function agregarSolicitudTiempoRealNexus(data) {
                volverAFeedbackGlobal();
          }
     });
+
+  function eliminarMensajeFeedbackGlobal(mensajeId, boton) {
+
+    if (!confirm("¿Eliminar este mensaje?")) {
+        return;
+    }
+
+    fetch(
+        `${window.FEEDBACK_GLOBAL_ELIMINAR_BASE_URL}${mensajeId}/`,
+        {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        }
+    )
+    .then(response => response.json())
+    .then(data => {
+
+        if (!data.ok) {
+            mostrarToastNexus(
+                data.error || "No se pudo eliminar."
+            );
+            return;
+        }
+
+        const mensaje = boton.closest(".mensaje-feedback");
+
+        if (!mensaje) return;
+
+        mensaje.classList.add("feedback-deleting");
+
+        setTimeout(() => {
+            mensaje.remove();
+        }, 250);
+
+    })
+    .catch(() => {
+        mostrarToastNexus("Error eliminando mensaje.");
+    });
+ }
 
 function reproducirSonidoNotificacionNexus() {
     const sonido = new Audio("/static/sounds/notificacion.mp3");
