@@ -7193,3 +7193,266 @@ img {
 .mensaje-feedback {
     cursor: context-menu;
 }
+
+/* =========================================================
+   NEXUS ROLES - CHAT GLOBAL
+========================================================= */
+
+.nexus-user-role {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+/* BADGES BASE */
+
+.nexus-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    width: fit-content;
+}
+
+/* =========================================================
+   OWNER - MODO EXAGERADO
+========================================================= */
+
+.nexus-role-owner .nexus-creator-name {
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 0.7px;
+
+    background: linear-gradient(
+        90deg,
+        #facc15,
+        #ffffff,
+        #f59e0b,
+        #fde68a,
+        #facc15
+    );
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    text-shadow:
+        0 0 8px rgba(250, 204, 21, 0.7),
+        0 0 18px rgba(245, 158, 11, 0.55),
+        0 0 32px rgba(250, 204, 21, 0.35);
+
+    animation:
+        ownerNameGradient 2.3s linear infinite,
+        ownerNamePulse 1.4s ease-in-out infinite alternate;
+}
+
+.nexus-role-badge.owner {
+    position: relative;
+    overflow: hidden;
+
+    background: linear-gradient(
+        90deg,
+        #78350f,
+        #facc15,
+        #fff7ed,
+        #f59e0b,
+        #78350f
+    );
+    background-size: 300% 300%;
+    color: #111827;
+
+    border: 1px solid rgba(255, 255, 255, 0.55);
+
+    box-shadow:
+        0 0 10px rgba(250, 204, 21, 0.75),
+        0 0 22px rgba(245, 158, 11, 0.55),
+        inset 0 0 8px rgba(255, 255, 255, 0.45);
+
+    animation:
+        ownerBadgeGradient 2s linear infinite,
+        ownerBadgeFloat 1.6s ease-in-out infinite alternate;
+}
+
+.nexus-role-badge.owner::after {
+    content: "";
+    position: absolute;
+    top: -40%;
+    left: -60%;
+    width: 45%;
+    height: 180%;
+    background: rgba(255, 255, 255, 0.65);
+    transform: rotate(25deg);
+    animation: ownerShine 1.8s ease-in-out infinite;
+}
+
+/* burbuja del mensaje owner */
+.mensaje-feedback:has(.nexus-role-badge.owner) .burbuja-feedback {
+    border: 1px solid rgba(250, 204, 21, 0.55);
+    box-shadow:
+        0 0 18px rgba(250, 204, 21, 0.22),
+        inset 0 0 18px rgba(250, 204, 21, 0.08);
+}
+
+/* =========================================================
+   VIP - FUERTE PERO MENOS QUE OWNER
+========================================================= */
+
+.nexus-role-vip .nexus-creator-name {
+    font-weight: 800;
+    letter-spacing: 0.5px;
+
+    background: linear-gradient(
+        90deg,
+        #ec4899,
+        #a855f7,
+        #38bdf8,
+        #ec4899
+    );
+    background-size: 250% 250%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    text-shadow:
+        0 0 8px rgba(236, 72, 153, 0.55),
+        0 0 16px rgba(168, 85, 247, 0.35);
+
+    animation: vipNameGradient 3s linear infinite;
+}
+
+.nexus-role-badge.vip {
+    background: linear-gradient(
+        90deg,
+        #7e22ce,
+        #ec4899,
+        #38bdf8,
+        #7e22ce
+    );
+    background-size: 260% 260%;
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+
+    box-shadow:
+        0 0 10px rgba(236, 72, 153, 0.55),
+        0 0 18px rgba(168, 85, 247, 0.35);
+
+    animation:
+        vipBadgeGradient 3s linear infinite,
+        vipBadgePulse 1.8s ease-in-out infinite alternate;
+}
+
+.mensaje-feedback:has(.nexus-role-badge.vip) .burbuja-feedback {
+    border: 1px solid rgba(236, 72, 153, 0.35);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.16);
+}
+
+/* =========================================================
+   ADMIN - SERIO, FUERTE, SOBRIO
+========================================================= */
+
+.nexus-role-admin .nexus-creator-name {
+    color: #fecaca;
+    font-weight: 800;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
+}
+
+.nexus-role-badge.admin {
+    background: linear-gradient(90deg, #450a0a, #991b1b);
+    color: #fecaca;
+    border: 1px solid rgba(248, 113, 113, 0.45);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+}
+
+/* =========================================================
+   MOD - AZUL ELEGANTE
+========================================================= */
+
+.nexus-role-mod .nexus-creator-name {
+    color: #bfdbfe;
+    font-weight: 800;
+}
+
+.nexus-role-badge.mod {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    color: #dbeafe;
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.22);
+}
+
+/* =========================================================
+   HELPER - VERDE/TEAL
+========================================================= */
+
+.nexus-role-helper .nexus-creator-name {
+    color: #99f6e4;
+    font-weight: 700;
+}
+
+.nexus-role-badge.helper {
+    background: linear-gradient(90deg, #134e4a, #0f766e);
+    color: #ccfbf1;
+    border: 1px solid rgba(45, 212, 191, 0.35);
+}
+
+/* =========================================================
+   ANIMACIONES
+========================================================= */
+
+@keyframes ownerNameGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+@keyframes ownerNamePulse {
+    from {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    to {
+        transform: scale(1.05);
+        filter: brightness(1.25);
+    }
+}
+
+@keyframes ownerBadgeGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+@keyframes ownerBadgeFloat {
+    from { transform: translateY(0); }
+    to { transform: translateY(-2px); }
+}
+
+@keyframes ownerShine {
+    0% { left: -70%; opacity: 0; }
+    35% { opacity: 1; }
+    100% { left: 130%; opacity: 0; }
+}
+
+@keyframes vipNameGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 250% 50%; }
+}
+
+@keyframes vipBadgeGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 260% 50%; }
+}
+
+@keyframes vipBadgePulse {
+    from {
+        filter: brightness(1);
+        transform: scale(1);
+    }
+    to {
+        filter: brightness(1.12);
+        transform: scale(1.025);
+    }
+}

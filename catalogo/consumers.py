@@ -8,6 +8,19 @@ from django.contrib.auth.models import User
 from .models import MensajePrivado
 
 
+def obtener_nivel_rol(rol):
+
+    niveles = {
+        "usuario": 0,
+        "vip": 1,
+        "helper": 2,
+        "mod": 3,
+        "admin": 4,
+        "owner": 5,
+    }
+
+    return niveles.get(rol, 0)
+
 # ============================================================
 # CHAT PRIVADO EN TIEMPO REAL - NEXUS
 # ============================================================
@@ -289,16 +302,22 @@ class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
         if perfil and perfil.foto_perfil:
             avatar = perfil.foto_perfil.url
 
+        rol = getattr(perfil, "rol_nexus", "usuario")
+
         return {
-            "id": mensaje.id,
-            "usuario_id": usuario.id,
-            "username": usuario.username,
-            "texto": mensaje.texto,
-            "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
-            "avatar": avatar,
-            "es_creador": usuario.is_staff or usuario.is_superuser,
-            "es_mio": False
-        }
+        "id": mensaje.id,
+        "usuario_id": usuario.id,
+        "username": usuario.username,
+        "texto": mensaje.texto,
+        "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
+        "avatar": avatar,
+
+        "rol": rol,
+        "es_creador": rol == "owner" or usuario.is_superuser,
+        "puede_borrar": obtener_nivel_rol(rol) >= 3 or usuario.is_staff or usuario.is_superuser,
+
+        "es_mio": False
+}
 # ============================================================
 # NOTIFICACIONES EN TIEMPO REAL - NEXUS
 # ============================================================

@@ -739,6 +739,8 @@
 
 function crearMensajeFeedbackGlobalElemento(msg) {
     const item = document.createElement("div");
+    
+    const rol = msg.rol || "usuario";
 
     item.className = msg.es_mio
         ? "mensaje-feedback mio"
@@ -759,16 +761,34 @@ function crearMensajeFeedbackGlobalElemento(msg) {
         >
 
         <div class="burbuja-feedback">
-            <strong class="${msg.es_creador ? 'nexus-creator-user' : ''}">
-                ${msg.es_creador ? `
-                    <span class="nexus-creator-title">CREADOR</span>
-                ` : ''}
+        <strong class="nexus-user-role nexus-role-${rol}">
 
-                <span class="nexus-creator-name">
-                    ${msg.es_creador ? '👑 ' : ''}
-                    ${escaparHTMLNexus(msg.username)}
-                </span>
-            </strong>
+            ${rol === "owner" ? `
+            <span class="nexus-role-badge owner">👑 OWNER</span>
+            ` : ''}
+
+            ${rol === "admin" ? `
+            <span class="nexus-role-badge admin">🛡 ADMIN</span>
+            ` : ''}
+
+            ${rol === "mod" ? `
+            <span class="nexus-role-badge mod">⚔ MOD</span>
+            ` : ''}
+
+           ${rol === "helper" ? `
+           <span class="nexus-role-badge helper">🛰 HELPER</span>
+           ` : ''}
+
+           ${rol === "vip" ? `
+           <span class="nexus-role-badge vip">💎 VIP</span>
+           ` : ''}
+
+        <span class="nexus-creator-name">
+           ${rol === "owner" ? '👑 ' : ''}
+           ${escaparHTMLNexus(msg.username)}
+        </span>
+
+        </strong>
 
             <p>${escaparHTMLNexus(msg.texto)}</p>
             <span>${escaparHTMLNexus(msg.fecha)}</span>

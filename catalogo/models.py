@@ -8,7 +8,22 @@ from django.contrib.auth.models import User
 
 class PerfilUsuario(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    
+    ROLES_NEXUS = [
+    ("usuario", "Usuario"),
+    ("vip", "VIP"),
+    ("helper", "Helper"),
+    ("mod", "Moderador"),
+    ("admin", "Admin"),
+    ("owner", "Owner"),
+   ]
 
+    rol_nexus = models.CharField(
+    max_length=20,
+    choices=ROLES_NEXUS,
+    default="usuario"
+    )
+    
     foto_perfil = models.ImageField(
         upload_to="perfiles/fotos/",
         blank=True,
