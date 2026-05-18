@@ -1867,7 +1867,10 @@ def importar_catalogo_render(request):
         
 @login_required
 def cargar_feedback_global(request):
-    mensajes = MensajeGlobalFeedback.objects.select_related("usuario").order_by("fecha")[:100]
+    mensajes = MensajeGlobalFeedback.objects.select_related(
+        "usuario",
+        "usuario__perfilusuario"
+    ).order_by("fecha")[:100]
 
     data = []
 
@@ -1875,8 +1878,24 @@ def cargar_feedback_global(request):
         perfil = getattr(mensaje.usuario, "perfilusuario", None)
 
         avatar_url = None
-        if perfil and perfil.foto_perfil:
-            avatar_url = perfil.foto_perfil.url
+        banner_url = None
+        rol = "usuario"
+
+        if perfil:
+            rol = getattr(perfil, "rol_nexus", "usuario")
+
+            if perfil.foto_perfil:
+                avatar_url = perfil.foto_perfil.url
+
+            if perfil.fondo_perfil:
+                banner_url = perfil.fondo_perfil.url
+
+        puede_borrar = (
+            mensaje.usuario == request.user
+            or rol in ["mod", "admin", "owner"]
+            or request.user.is_staff
+            or request.user.is_superuser
+        )
 
         data.append({
             "id": mensaje.id,
@@ -1885,6 +1904,10 @@ def cargar_feedback_global(request):
             "texto": mensaje.texto,
             "fecha": mensaje.fecha.strftime("%d/%m/%Y %H:%M"),
             "avatar": avatar_url,
+            "banner": banner_url,
+            "rol": rol,
+            "es_creador": rol == "owner",
+            "puede_borrar": puede_borrar,
             "es_mio": mensaje.usuario == request.user,
         })
 
@@ -1926,6 +1949,11 @@ def enviar_feedback_global(request):
     return JsonResponse({
         "ok": True,
         "mensaje": {
+            
+            "rol": getattr(perfil, "rol_nexus", "usuario") if perfil else "usuario",
+            "es_creador": getattr(perfil, "rol_nexus", "usuario") == "owner" if perfil else False,
+            "puede_borrar": True,
+            "banner": perfil.fondo_perfil.url if perfil and perfil.fondo_perfil else None,
             "id": mensaje.id,
             "usuario_id": request.user.id,
             "username": request.user.username,
