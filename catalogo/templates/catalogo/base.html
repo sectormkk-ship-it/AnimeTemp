@@ -313,12 +313,47 @@
     </div>
 
 
-    <div id="nexus-message-context-menu" class="nexus-context-menu" style="display:none;">
-    <div id="nexus-mini-profile" class="nexus-mini-profile" style="display:none;"></div>
-    <button type="button" onclick="borrarMensajeDesdeMenuNexus()">
+    <div id="nexus-message-context-menu" class="nexus-context-menu nexus-message-admin-menu" style="display:none;">
+
+    <button type="button" data-min-role="0" onclick="verPerfilMensajeNexus()">
+        👤 Ver perfil
+    </button>
+
+    <button type="button" data-min-role="3" onclick="borrarMensajeDesdeMenuNexus()">
         🗑 Borrar mensaje
     </button>
-</div>
+
+    <button type="button" data-min-role="4" onclick="silenciarUsuarioDesdeMensajeNexus()">
+        🔕 Silenciar usuario
+    </button>
+
+    <button type="button" data-min-role="4" onclick="bloquearUsuarioDesdeMensajeNexus()">
+        🚫 Bloquear usuario
+    </button>
+
+    <hr data-min-role="5">
+
+    <button type="button" data-min-role="5" onclick="cambiarRolDesdeMensajeNexus('vip')">
+        💎 Dar VIP
+    </button>
+
+    <button type="button" data-min-role="5" onclick="cambiarRolDesdeMensajeNexus('helper')">
+        🛰 Dar Helper
+    </button>
+
+    <button type="button" data-min-role="5" onclick="cambiarRolDesdeMensajeNexus('mod')">
+        ⚔ Dar Moderador
+    </button>
+
+    <button type="button" data-min-role="5" onclick="cambiarRolDesdeMensajeNexus('admin')">
+        🛡 Dar Admin
+    </button>
+
+    <button type="button" data-min-role="5" onclick="cambiarRolDesdeMensajeNexus('usuario')">
+        👤 Quitar rango
+    </button>
+
+  </div>
 <script>
     
     window.FEEDBACK_GLOBAL_CARGAR_URL = "{% url 'cargar_feedback_global' %}";
@@ -337,6 +372,28 @@
     let nexusCerrandoSocketManual = false;
     let nexusMensajeContextId = null;
     let nexusMensajeContextElemento = null;
+    let nexusMensajeContextUsuarioId = null;
+    let nexusMensajeContextUsername = null;
+    let nexusMensajeContextRol = "usuario";
+
+    const NEXUS_ROL_ACTUAL = "{{ user.perfilusuario.rol_nexus|default:'usuario' }}";
+
+    const NEXUS_ROLE_LEVELS = {
+    usuario: 0,
+    vip: 1,
+    helper: 2,
+    mod: 3,
+    admin: 4,
+    owner: 5
+  };
+
+    function nivelRolNexus(rol) {
+    return NEXUS_ROLE_LEVELS[rol] || 0;
+  }
+
+    function puedeUsarAccionNexus(nivelMinimo) {
+    return nivelRolNexus(NEXUS_ROL_ACTUAL) >= nivelMinimo;
+  }
 
     const FOTO_DEFAULT = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -447,6 +504,19 @@
             ? "nexus-online-user nexus-online-creator"
             : "nexus-online-user";
 
+        item.dataset.usuarioId = usuario.id || "";
+        item.dataset.username = usuario.username || "";
+        item.dataset.avatar = usuario.avatar || FOTO_DEFAULT;
+        item.dataset.banner = usuario.banner || "";
+        item.dataset.rol = usuario.rol || (usuario.es_creador ? "owner" : "usuario");
+
+    item.addEventListener("mouseenter", function(event) {
+    mostrarMiniPerfilNexus(event, item);
+    });
+
+    item.addEventListener("mouseleave", function() {
+    ocultarMiniPerfilNexus();
+    });
         item.innerHTML = `
             <img
                 src="${usuario.avatar || FOTO_DEFAULT}"
@@ -466,9 +536,16 @@
                 </strong>
             </div>
         `;
+        
+        item.addEventListener("mouseenter", function(event) {
+        mostrarMiniPerfilNexus(event, item);
+      });
 
+        item.addEventListener("mouseleave", function() {
+        ocultarMiniPerfilNexus();
+      });
         panel.appendChild(item);
-    });
+      });
   }
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -769,18 +846,11 @@ function crearMensajeFeedbackGlobalElemento(msg) {
     item.dataset.avatar = msg.avatar || FOTO_DEFAULT;
     item.dataset.banner = msg.banner || "";
     item.dataset.rol = msg.rol || "usuario";
+    item.dataset.esMio = msg.es_mio ? "1" : "0";
 
     item.oncontextmenu = function(event) {
         mostrarMenuMensajeNexus(event, item);
     };
-    
-    item.addEventListener("mouseenter", function(event) {
-    mostrarMiniPerfilNexus(event, item);
-    });
-
-    item.addEventListener("mouseleave", function() {
-    ocultarMiniPerfilNexus();
-    });
 
     item.innerHTML = `
         <img
@@ -1845,19 +1915,39 @@ function agregarSolicitudTiempoRealNexus(data) {
          }
     });
   
-  function mostrarMenuMensajeNexus(event, mensajeElemento) {
+ function mostrarMenuMensajeNexus(event, mensajeElemento) {
     event.preventDefault();
 
     const menu = document.getElementById("nexus-message-context-menu");
     if (!menu || !mensajeElemento) return;
 
-    const puedeBorrar = mensajeElemento.dataset.puedeBorrar === "1";
-    const mensajeId = mensajeElemento.dataset.mensajeId;
-
-    if (!puedeBorrar || !mensajeId) return;
-
-    nexusMensajeContextId = mensajeId;
+    nexusMensajeContextId = mensajeElemento.dataset.mensajeId || null;
     nexusMensajeContextElemento = mensajeElemento;
+    nexusMensajeContextUsuarioId = mensajeElemento.dataset.usuarioId || null;
+    nexusMensajeContextUsername = mensajeElemento.dataset.username || "Usuario";
+    nexusMensajeContextRol = mensajeElemento.dataset.rol || "usuario";
+
+    const esMio = mensajeElemento.dataset.esMio === "1";
+    const soyOwner = NEXUS_ROL_ACTUAL === "owner";
+    const soyStaffModeracion = nivelRolNexus(NEXUS_ROL_ACTUAL) >= 3;
+
+    menu.querySelectorAll("[data-min-role]").forEach(opcion => {
+        const nivelMinimo = Number(opcion.dataset.minRole || 0);
+        opcion.style.display = puedeUsarAccionNexus(nivelMinimo) ? "" : "none";
+    });
+
+    const botonBorrar = menu.querySelector('[onclick="borrarMensajeDesdeMenuNexus()"]');
+
+    if (botonBorrar) {
+        botonBorrar.style.display = (esMio || soyStaffModeracion) ? "" : "none";
+    }
+
+    if (!esMio && !soyStaffModeracion && !soyOwner) {
+        const opcionesVisibles = [...menu.querySelectorAll("button")]
+            .some(btn => btn.style.display !== "none");
+
+        if (!opcionesVisibles) return;
+    }
 
     menu.style.display = "block";
     menu.style.left = event.clientX + "px";
@@ -1995,6 +2085,77 @@ function borrarMensajeDesdeMenuNexus() {
     .catch(() => {
         mostrarToastNexus("Error eliminando mensaje.");
     });
+}
+
+function verPerfilMensajeNexus() {
+    if (!nexusMensajeContextUsuarioId) return;
+    window.location.href = "/perfil/" + nexusMensajeContextUsuarioId + "/";
+}
+
+function silenciarUsuarioDesdeMensajeNexus() {
+    if (!nexusMensajeContextUsuarioId) return;
+
+    fetch("/usuario/silenciar/" + nexusMensajeContextUsuarioId + "/")
+        .then(response => response.json())
+        .then(data => {
+            mostrarToastNexus(data.mensaje || "Usuario silenciado.");
+            ocultarMenuMensajeNexus();
+        })
+        .catch(() => mostrarToastNexus("No se pudo silenciar."));
+}
+
+function bloquearUsuarioDesdeMensajeNexus() {
+    if (!nexusMensajeContextUsuarioId) return;
+
+    if (!confirm("¿Bloquear a " + nexusMensajeContextUsername + "?")) return;
+
+    fetch("/usuario/bloquear/" + nexusMensajeContextUsuarioId + "/")
+        .then(response => response.json())
+        .then(data => {
+            if (data.ok) {
+                mostrarToastNexus("Usuario bloqueado.");
+                ocultarMenuMensajeNexus();
+            } else {
+                mostrarToastNexus(data.error || "No se pudo bloquear.");
+            }
+        })
+        .catch(() => mostrarToastNexus("Error bloqueando usuario."));
+}
+
+function cambiarRolDesdeMensajeNexus(nuevoRol) {
+    if (!nexusMensajeContextUsuarioId) return;
+
+    if (!confirm("¿Cambiar el rol de " + nexusMensajeContextUsername + " a " + nuevoRol + "?")) {
+        return;
+    }
+
+    fetch("/nexus/rol/" + nexusMensajeContextUsuarioId + "/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            rol: nuevoRol
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.ok) {
+            mostrarToastNexus(data.error || "No se pudo cambiar el rol.");
+            return;
+        }
+
+        mostrarToastNexus(data.mensaje || "Rol actualizado.");
+
+        if (nexusMensajeContextElemento) {
+            nexusMensajeContextElemento.dataset.rol = nuevoRol;
+        }
+
+        ocultarMenuMensajeNexus();
+    })
+    .catch(() => mostrarToastNexus("Error cambiando rol."));
 }
 
 function reproducirSonidoNotificacionNexus() {

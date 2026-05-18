@@ -106,6 +106,8 @@ urlpatterns = [
     path('usuario/silenciar/<int:usuario_id>/',views.silenciar_usuario,name='silenciar_usuario'),
 
     path('usuario/reportar/<int:usuario_id>/',views.reportar_usuario,name='reportar_usuario'),
+    
+    path("nexus/rol/<int:usuario_id>/", views.cambiar_rol_nexus, name="cambiar_rol_nexus"),
 
     # ============================================================
     # REPORTES

@@ -1864,6 +1864,57 @@ def importar_catalogo_render(request):
             "error": str(e)
         }, status=500)    
         
+
+@login_required
+@require_POST
+def cambiar_rol_nexus(request, usuario_id):
+
+    perfil_admin = getattr(request.user, "perfilusuario", None)
+    rol_admin = getattr(perfil_admin, "rol_nexus", "usuario")
+
+    if rol_admin != "owner" and not request.user.is_superuser:
+        return JsonResponse({
+            "ok": False,
+            "error": "Solo el OWNER puede cambiar roles."
+        }, status=403)
+
+    usuario_obj = get_object_or_404(User, id=usuario_id)
+
+    if usuario_obj == request.user:
+        return JsonResponse({
+            "ok": False,
+            "error": "No podés cambiar tu propio rol desde aquí."
+        }, status=400)
+
+    nuevo_rol = request.POST.get("rol", "").strip()
+
+    roles_validos = [
+        "usuario",
+        "vip",
+        "helper",
+        "mod",
+        "admin",
+    ]
+
+    if nuevo_rol not in roles_validos:
+        return JsonResponse({
+            "ok": False,
+            "error": "Rol inválido."
+        }, status=400)
+
+    perfil_usuario, creado = PerfilUsuario.objects.get_or_create(
+        usuario=usuario_obj
+    )
+
+    perfil_usuario.rol_nexus = nuevo_rol
+    perfil_usuario.save()
+
+    return JsonResponse({
+        "ok": True,
+        "mensaje": f"Rol de {usuario_obj.username} cambiado a {nuevo_rol}.",
+        "rol": nuevo_rol,
+        "usuario_id": usuario_obj.id,
+    })
         
 @login_required
 def cargar_feedback_global(request):

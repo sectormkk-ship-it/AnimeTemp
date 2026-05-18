@@ -285,6 +285,8 @@ class FeedbackGlobalConsumer(AsyncWebsocketConsumer):
             "username": usuario.username,
             "avatar": avatar,
             "es_creador": usuario.is_staff or usuario.is_superuser,
+            "rol": getattr(perfil, "rol_nexus", "usuario") if perfil else "usuario",
+            "banner": perfil.fondo_perfil.url if perfil and perfil.fondo_perfil else None,
         }
 
     @database_sync_to_async
