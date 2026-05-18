@@ -470,13 +470,28 @@
         panel.appendChild(item);
     });
   }
-    document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-    // TODO tu código actual...
+    // código...
 
     document.addEventListener("click", function() {
         ocultarMenuMensajeNexus();
     });
+
+    const miniPerfil = document.getElementById("nexus-mini-profile");
+
+    if (miniPerfil) {
+
+        miniPerfil.addEventListener("mouseenter", function() {
+            clearTimeout(nexusMiniPerfilTimer);
+        });
+
+        miniPerfil.addEventListener("mouseleave", function() {
+            programarCierreMiniPerfilNexus();
+        });
+
+    }
+
 });
 
     function actualizarBadgeGlobal(total) {
@@ -761,14 +776,6 @@ function crearMensajeFeedbackGlobalElemento(msg) {
     
     item.addEventListener("mouseenter", function(event) {
     mostrarMiniPerfilNexus(event, item);
-    });
-
-    item.addEventListener("mousemove", function(event) {
-    const mini = document.getElementById("nexus-mini-profile");
-    if (!mini || mini.style.display === "none") return;
-
-    mini.style.left = event.clientX + 18 + "px";
-    mini.style.top = event.clientY - 20 + "px";
     });
 
     item.addEventListener("mouseleave", function() {
@@ -1857,15 +1864,19 @@ function agregarSolicitudTiempoRealNexus(data) {
     menu.style.top = event.clientY + "px";
 }
 
-function mostrarMiniPerfilNexus(event, mensajeElemento) {
-    const mini = document.getElementById("nexus-mini-profile");
-    if (!mini || !mensajeElemento) return;
+let nexusMiniPerfilTimer = null;
 
-    const rol = mensajeElemento.dataset.rol || "usuario";
-    const username = mensajeElemento.dataset.username || "Usuario";
-    const avatar = mensajeElemento.dataset.avatar || FOTO_DEFAULT;
-    const banner = mensajeElemento.dataset.banner || "";
-    const usuarioId = mensajeElemento.dataset.usuarioId || "";
+function mostrarMiniPerfilNexus(event, elemento) {
+    const mini = document.getElementById("nexus-mini-profile");
+    if (!mini || !elemento) return;
+
+    clearTimeout(nexusMiniPerfilTimer);
+
+    const rol = elemento.dataset.rol || "usuario";
+    const username = elemento.dataset.username || "Usuario";
+    const avatar = elemento.dataset.avatar || FOTO_DEFAULT;
+    const banner = elemento.dataset.banner || "";
+    const usuarioId = elemento.dataset.usuarioId || "";
 
     mini.innerHTML = `
         <div class="nexus-mini-banner" style="background-image:url('${banner || "/static/img/default-banner.jpg"}')"></div>
@@ -1901,14 +1912,41 @@ function mostrarMiniPerfilNexus(event, mensajeElemento) {
         </div>
     `;
 
+    const rect = elemento.getBoundingClientRect();
+
     mini.style.display = "block";
-    mini.style.left = event.clientX + 18 + "px";
-    mini.style.top = event.clientY - 20 + "px";
+
+    let left = rect.left - 335;
+    let top = rect.top - 20;
+
+    if (left < 10) {
+        left = rect.right + 14;
+    }
+
+    if (top < 10) {
+        top = 10;
+    }
+
+    const maxTop = window.innerHeight - 360;
+    if (top > maxTop) {
+        top = Math.max(10, maxTop);
+    }
+
+    mini.style.left = left + "px";
+    mini.style.top = top + "px";
+}
+
+function programarCierreMiniPerfilNexus() {
+    clearTimeout(nexusMiniPerfilTimer);
+
+    nexusMiniPerfilTimer = setTimeout(() => {
+        const mini = document.getElementById("nexus-mini-profile");
+        if (mini) mini.style.display = "none";
+    }, 3000);
 }
 
 function ocultarMiniPerfilNexus() {
-    const mini = document.getElementById("nexus-mini-profile");
-    if (mini) mini.style.display = "none";
+    programarCierreMiniPerfilNexus();
 }
 
 function ocultarMenuMensajeNexus() {
