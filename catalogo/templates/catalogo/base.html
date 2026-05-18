@@ -314,6 +314,7 @@
 
 
     <div id="nexus-message-context-menu" class="nexus-context-menu" style="display:none;">
+    <div id="nexus-mini-profile" class="nexus-mini-profile" style="display:none;"></div>
     <button type="button" onclick="borrarMensajeDesdeMenuNexus()">
         🗑 Borrar mensaje
     </button>
@@ -748,15 +749,36 @@ function crearMensajeFeedbackGlobalElemento(msg) {
 
     item.dataset.mensajeId = msg.id || "";
     item.dataset.puedeBorrar = msg.es_mio || msg.puede_borrar ? "1" : "0";
+    item.dataset.usuarioId = msg.usuario_id || "";
+    item.dataset.username = msg.username || "";
+    item.dataset.avatar = msg.avatar || FOTO_DEFAULT;
+    item.dataset.banner = msg.banner || "";
+    item.dataset.rol = msg.rol || "usuario";
 
     item.oncontextmenu = function(event) {
         mostrarMenuMensajeNexus(event, item);
     };
+    
+    item.addEventListener("mouseenter", function(event) {
+    mostrarMiniPerfilNexus(event, item);
+    });
+
+    item.addEventListener("mousemove", function(event) {
+    const mini = document.getElementById("nexus-mini-profile");
+    if (!mini || mini.style.display === "none") return;
+
+    mini.style.left = event.clientX + 18 + "px";
+    mini.style.top = event.clientY - 20 + "px";
+    });
+
+    item.addEventListener("mouseleave", function() {
+    ocultarMiniPerfilNexus();
+    });
 
     item.innerHTML = `
         <img
-            src="${msg.avatar || FOTO_DEFAULT}"
-            class="foto-chat"
+             src="${msg.avatar || FOTO_DEFAULT}"
+            class="foto-chat nexus-profile-hover"
             onerror="this.src='${FOTO_DEFAULT}'"
         >
 
@@ -1833,6 +1855,60 @@ function agregarSolicitudTiempoRealNexus(data) {
     menu.style.display = "block";
     menu.style.left = event.clientX + "px";
     menu.style.top = event.clientY + "px";
+}
+
+function mostrarMiniPerfilNexus(event, mensajeElemento) {
+    const mini = document.getElementById("nexus-mini-profile");
+    if (!mini || !mensajeElemento) return;
+
+    const rol = mensajeElemento.dataset.rol || "usuario";
+    const username = mensajeElemento.dataset.username || "Usuario";
+    const avatar = mensajeElemento.dataset.avatar || FOTO_DEFAULT;
+    const banner = mensajeElemento.dataset.banner || "";
+    const usuarioId = mensajeElemento.dataset.usuarioId || "";
+
+    mini.innerHTML = `
+        <div class="nexus-mini-banner" style="background-image:url('${banner || "/static/img/default-banner.jpg"}')"></div>
+
+        <div class="nexus-mini-content">
+            <img src="${avatar}" class="nexus-mini-avatar" onerror="this.src='${FOTO_DEFAULT}'">
+
+            <div class="nexus-mini-info">
+                <strong class="nexus-mini-name nexus-role-${rol}">
+                    ${rol === "owner" ? "👑 " : ""}
+                    ${escaparHTMLNexus(username)}
+                </strong>
+
+                <span class="nexus-role-badge ${rol}">
+                    ${rol === "owner" ? "👑 OWNER" : ""}
+                    ${rol === "admin" ? "🛡 ADMIN" : ""}
+                    ${rol === "mod" ? "⚔ MOD" : ""}
+                    ${rol === "helper" ? "🛰 HELPER" : ""}
+                    ${rol === "vip" ? "💎 VIP" : ""}
+                    ${rol === "usuario" ? "👤 USUARIO" : ""}
+                </span>
+
+                <div class="nexus-mini-badges">
+                    <span>⭐ Tester</span>
+                    <span>💬 Nexus</span>
+                    ${rol === "owner" ? "<span>🔥 Fundador</span>" : ""}
+                </div>
+
+                <button type="button" onclick="window.location.href='/perfil/${usuarioId}/'">
+                    Ver perfil
+                </button>
+            </div>
+        </div>
+    `;
+
+    mini.style.display = "block";
+    mini.style.left = event.clientX + 18 + "px";
+    mini.style.top = event.clientY - 20 + "px";
+}
+
+function ocultarMiniPerfilNexus() {
+    const mini = document.getElementById("nexus-mini-profile");
+    if (mini) mini.style.display = "none";
 }
 
 function ocultarMenuMensajeNexus() {
